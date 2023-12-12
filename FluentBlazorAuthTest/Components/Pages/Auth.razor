@@ -1,0 +1,43 @@
+﻿@page "/auth"
+
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Identity
+@using FluentBlazorAuthTest.Data  @* namespace of ApplicationUser.cs *@
+
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject UserManager<ApplicationUser> UserManager
+
+
+@attribute [Authorize]
+
+<PageTitle>Auth</PageTitle>
+
+<h1>You are authenticated</h1>
+
+<AuthorizeView>
+    @if (currentUser != null)
+    {
+        <p>Hello @currentUser.FirstName @currentUser.LastName!</p>
+        <p>Your current username & email is @context.User.Identity?.Name</p>
+    } else
+    {
+        <p>Loading current user information...</p>
+    }
+
+</AuthorizeView>
+
+@code{
+    private ApplicationUser currentUser;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        if (user.Identity.IsAuthenticated)
+        {
+            var userId = UserManager.GetUserId(user);
+            currentUser = await UserManager.FindByIdAsync(userId);
+        }
+    }
+}
