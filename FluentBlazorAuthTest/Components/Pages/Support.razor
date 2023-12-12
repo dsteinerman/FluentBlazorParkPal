@@ -3,9 +3,246 @@
 <PageTitle>Support</PageTitle>
 
 
-<h3>Support</h3>
+<head>
+    <meta charset="UTF-8">
+    <title>Customer Service & Policies</title>
+    <link rel="stylesheet" href="/bootstrap/CSS/darkmode.css">
+    <style>
 
+        body {
+            font-family: Verdana;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+            color: #333;
+        }
 
-@code {
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
 
-}
+        h2 {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .accordion-btn {
+            width: 100%;
+            text-align: left;
+            padding: 10px;
+            border: none;
+            outline: none;
+            background-color: #f5f5f5;
+            color: #333;
+            cursor: pointer;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            transition: background-color 0.3s ease-in-out;
+        }
+
+        .accordion-content {
+            display: none;
+            padding: 10px;
+            border-radius: 5px;
+            background-color: #fff;
+        }
+
+        .active {
+            background-color: #ddd;
+        }
+
+        .chat-icon {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: #0084FF;
+            color: #fff;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+            z-index: 1000;
+            transition: background-color 0.3s ease-in-out;
+        }
+
+            .chat-icon i {
+                font-size: 24px;
+            }
+
+        .chat-window {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            max-width: 300px;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            display: none;
+            padding: 20px;
+        }
+
+        .chat-body {
+            height: 150px;
+            overflow-y: auto;
+            border: 1px solid #ccc;
+            padding: 10px;
+            border-radius: 5px;
+        }
+
+        .chat-input {
+            display: flex;
+            margin-top: 10px;
+        }
+
+            .chat-input input[type="text"] {
+                flex: 1;
+                padding: 8px;
+                border-radius: 5px;
+                border: 1px solid #ccc;
+            }
+
+            .chat-input button {
+                padding: 8px 10px;
+                border: none;
+                border-radius: 5px;
+                background-color: #0084FF;
+                color: #fff;
+                margin-left: 10px;
+                cursor: pointer;
+                font-size: 12px;
+            }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Welcome to Our Support Center</h2>
+        <div class="accordion">
+            <button class="accordion-btn">Terms of Service</button>
+            <div class="accordion-content">
+                <p>
+                    Welcome to ParkPal! By using our application, you agree to abide by our terms and conditions.
+                    ParkPal provides a platform to facilitate parking space booking, offering convenience and ease of access.
+                    Users are responsible for accurate information, respectful interactions, and adhering to local
+                    parking regulations. ParkPal retains the right to update terms and policies, and users are
+                    encouraged to review them regularly. Your continued use of the application constitutes acceptance
+                    of any modifications made. Thank you for choosing ParkPal!
+                </p>
+            </div>
+            <button class="accordion-btn">Policies</button>
+            <div class="accordion-content">
+                <p>
+                    Our Privacy Policy at ParkPal underscores our commitment to safeguarding user information.
+                    We prioritize the security and confidentiality of personal data shared while using our application.
+                    ParkPal collects necessary information solely to enhance user experience and facilitate parking reservations.
+                    We do not share or sell personal data to third parties without consent. By utilizing ParkPal, users acknowledge
+                    and consent to our data collection practices outlined in the Privacy Policy. We encourage reviewing our policy
+                    to stay informed about the handling of your information. Your trust in ParkPal is fundamental to us.
+                </p>
+            </div>
+            <button class="accordion-btn">Refunds</button>
+            <div class="accordion-content">
+                <p>
+                    At ParkPal, we strive to ensure your satisfaction with our services.
+                    Our refund policy aims to provide clarity and fairness in managing refunds for parking reservations.
+                    Refunds are issued under specific circumstances, such as cancellations made within the specified time frame
+                    before the scheduled parking period. Please review our detailed Refund Policy for a comprehensive understanding of eligible conditions, timelines, and processes for refunds.
+                    We value your patronage and are dedicated to addressing your concerns regarding refunds promptly and fairly
+                </p>
+            </div>
+            <button class="accordion-btn">Careers</button>
+            <div class="accordion-content">
+                <p>
+                    Explore exciting career opportunities at ParkPal, where innovation and collaboration thrive.
+                    Join us in shaping the future of parking solutions and be part of a dynamic team committed to driving
+                    meaningful change. Whether you're passionate about technology, marketing, operations, or customer
+                    experience, we provide an environment that fosters growth and creativity. At ParkPal,
+                    we value diverse perspectives and aim to create a workplace that encourages excellence and innovation.
+                    Discover your potential with us and contribute to redefining convenience in the parking industry.
+                </p>
+            </div>
+            <button class="accordion-btn">Disability Support</button>
+            <div class="accordion-content">
+
+                <p>
+                    At ParkPal, we are committed to inclusivity and ensuring accessibility for all.
+                    Our Disability Support services are designed to provide comprehensive assistance and resources for
+                    individuals with diverse needs. We strive to create an environment that accommodates different abilities,
+                    offering tailored support to enhance accessibility across our platform. Whether it's specialized parking
+                    options, accessible features in our app, or personalized assistance, we are dedicated to empowering everyone
+                    to navigate parking effortlessly. ParkPal advocates for an inclusive experience, aiming to break barriers
+                    and promote equality for individuals of all abilities.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div class="chat-icon" id="open-chat">
+        <i class="fas fa-comments"></i>
+        <span>Chat</span>
+    </div>
+
+    <div class="chat-window" id="chat-window">
+        <div class="chat-body" id="chat-body">
+            <!-- Chat messages will be displayed here -->
+        </div>
+        <div class="chat-input">
+            <input type="text" id="message" placeholder="Type a message...">
+            <button id="send">Send</button>
+        </div>
+    </div>
+
+    <script>
+                document.addEventListener('DOMContentLoaded', function () {
+                    const accordionButtons = document.querySelectorAll('.accordion-btn');
+                     const chatIcon = document.getElementById('open-chat');
+                     const chatWindow = document.getElementById('chat-window');
+
+                    // Toggles visibility of accordion content when each button (page title) is clicked
+
+                 accordionButtons.forEach(button => {
+                     button.addEventListener('click', () => {
+                          const content = button.nextElementSibling;
+                          button.classList.toggle('active');
+
+                          if (content.style.display === 'block') {
+                              content.style.display = 'none';
+                          } else {
+                                content.style.display = 'block';
+                    }
+                });
+            });
+
+             // Displays the chat window when the chat icon is clicked
+
+              chatIcon.addEventListener('click', function () {
+                         chatIcon.style.display = 'none';
+                         chatWindow.style.display = 'block';
+            });
+
+            const chatBody = document.getElementById('chat-body');
+            const messageInput = document.getElementById('message');
+            const sendButton = document.getElementById('send');
+
+            // Sends a message when the send button is clicked
+
+            sendButton.addEventListener('click', function () {
+                const message = messageInput.value.trim();
+                if (message !== '') {
+                    const newMessage = document.createElement('p');
+                    newMessage.textContent = message;
+                    chatBody.appendChild(newMessage);
+                    messageInput.value = '';
+                    chatBody.scrollTop = chatBody.scrollHeight;
+                }
+            });
+        });
+
+    </script>
+    <script src="/bootstrap/JS/darkmode.js"></script>
+</body>
