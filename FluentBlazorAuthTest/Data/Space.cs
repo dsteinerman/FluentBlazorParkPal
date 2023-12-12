@@ -8,29 +8,28 @@ namespace FluentBlazorAuthTest.Data
     /// </summary>
     public class Space
     {
-        //public Space()
-        //{
-        //    Id = Guid.NewGuid().ToString(); // Initialize with a new GUID as string
-        //    DateCreated = DateTime.UtcNow; // Set creation date to current date and time
-        //}
+        public Space()
+        {
+            Id = Guid.NewGuid().ToString(); // Initialize with a new GUID as string
+            DateCreated = DateTime.UtcNow; // Set creation date to current date and time
+        }
 
         /// <summary>
         /// The unique identifier for the space.
         /// </summary>
         [Key]
-        public string Id { get; set; } = default!;
+        public string Id { get; set; }
 
         /// <summary>
         /// The identifier of the user hosting the space.
         /// </summary>
-        [Required]
         [ForeignKey("HostUser")]
         public string? HostId { get; set; }
 
         /// <summary>
         /// EF Core Navigation property for the hosting user.
         /// </summary>
-        public ApplicationUser HostUser { get; set; }
+        public ApplicationUser? HostUser { get; set; }
 
         /// <summary>
         /// The identifier of the client user. If NULL, the space is vacant.
@@ -41,7 +40,7 @@ namespace FluentBlazorAuthTest.Data
         /// <summary>
         /// EF Core Navigation property for the client user.
         /// </summary>
-        public ApplicationUser ClientUser { get; set; }
+        public ApplicationUser? ClientUser { get; set; }
 
         /// <summary>
         /// Latitude value of the space location, constrained within valid geographical coordinates.
@@ -68,14 +67,20 @@ namespace FluentBlazorAuthTest.Data
         public SizeEnum? Size { get; set; }
 
         /// <summary>
-        /// A description of the space, with a maximum length of 4000 characters.
+        /// A description of the space. (Max Length: 4000)
         /// </summary>
         [MaxLength(4000)]
         public string? Description { get; set; }
 
         /// <summary>
+        /// URLs of images associated with the space.
+        /// </summary>
+        public List<string> ImageUrls { get; set; } = new List<string>();
+
+        /// <summary>
         /// Indicates whether the space is available for public booking.
         /// </summary>
+
         public bool IsPublic { get; set; }
 
         /// <summary>
@@ -92,13 +97,13 @@ namespace FluentBlazorAuthTest.Data
 
         // Considerations for future enhancements:
         // - Fields for photos and other media associated with the space.
-        // - Integration with Maps API for location-based functionalities.
+        // - Integration with Maps API for location-based functionality.
     }
 
     public enum SizeEnum
     {
         Compact,
         Standard,
-        XL
+        Xl
     }
 }
