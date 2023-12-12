@@ -10,7 +10,9 @@
     <FluentNavMenu Width="250" Collapsible="true" Title="Custom navigation menu">
         <FluentNavLink Href="/" Match="NavLinkMatch.All" Icon="@Icon.FromImageUrl("/images/home.svg")" IconColor="Color.Accent">Home</FluentNavLink>
         <FluentNavLink Href="auth" Icon="@Icon.FromImageUrl("/images/authrequired.svg")" IconColor="Color.Accent">Auth Required</FluentNavLink>
-        <FluentNavLink Href="/Search" Match="NavLinkMatch.All" Icon="@Icon.FromImageUrl("/images/home.svg")" IconColor="Color.Accent">Home</FluentNavLink>
+        
+
+
 
         <AuthorizeView>
             <Authorized>
@@ -25,8 +27,16 @@
                     <FluentNavLink Href="Account/Register">Register</FluentNavLink>
                     <FluentNavLink Href="Account/Login">Login</FluentNavLink>
             </NotAuthorized>
+
         </AuthorizeView>
-    </FluentNavMenu>
+            <FluentNavLink Href="/Search" Match="NavLinkMatch.All" Icon="@(new Icons.Regular.Size24.ImageSearch())" IconColor="Color.Accent">Search</FluentNavLink>
+
+            <FluentNavLink Href="/Support" Match="NavLinkMatch.All" Icon="@(new Icons.Regular.Size24.PersonPhone())" IconColor="Color.Accent">Support</FluentNavLink>
+
+            <FluentNavLink Href="/Messages" Match="NavLinkMatch.All" Icon="@(new Icons.Regular.Size24.Chat())" IconColor="Color.Accent">Messages</FluentNavLink>
+
+            <FluentNavLink Href="/Settings" Match="NavLinkMatch.All" Icon="@(new Icons.Regular.Size24.ArchiveSettings())" IconColor="Color.Accent">Settings</FluentNavLink>
+        </FluentNavMenu>
 </nav>
 
 
