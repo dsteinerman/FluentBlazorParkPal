@@ -1,0 +1,58 @@
+﻿/* Dark Mode Styles */
+.dark-mode {
+    filter: invert(1);
+    background-color: #111;
+    color: #fff;
+}
+
+
+    .dark-mode h1,
+    .dark-mode h2,
+    .dark-mode h3,
+    .dark-mode h4,
+    .dark-mode h5,
+    .dark-mode h6,
+    .dark-mode p {
+        color: #fff;
+        background-color: transparent;
+    }
+
+
+
+    .dark-mode h1,
+    .dark-mode h2,
+    .dark-mode h3,
+    .dark-mode h4,
+    .dark-mode h5,
+    .dark-mode h6 {
+        color: #fff;
+        background-color: transparent;
+    }
+
+
+    .dark-mode p {
+        color: #fff;
+        background-color: transparent;
+    }
+
+
+    .dark-mode a {
+        color: #aaa;
+        filter: invert(0);
+    }
+
+
+    .dark-mode img,
+    .dark-mode svg {
+        filter: invert(0.85);
+    }
+
+    .dark-mode .no-invert {
+        filter: invert(0);
+        color: #fff !important;
+        background-color: transparent;
+    }
+
+    .dark-mode h1 {
+        color: #fff !important;
+    }
