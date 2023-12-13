@@ -2,7 +2,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace FluentBlazorAuthTest.Data
+namespace FluentBlazorAuthTest.Data.Models
 {
     /// <summary>
     /// Represents a booking or rental transaction for a space.
@@ -18,7 +18,7 @@ namespace FluentBlazorAuthTest.Data
         /// <summary>
         /// Foreign key for the space being booked.
         /// </summary>
-        [ForeignKey("Space")]
+        [ForeignKey("NewSpace")]
         public string SpaceId { get; set; }
 
         /// <summary>

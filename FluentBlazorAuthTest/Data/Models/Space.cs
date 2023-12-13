@@ -1,19 +1,13 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
-namespace FluentBlazorAuthTest.Data
+namespace FluentBlazorAuthTest.Data.Models
 {
     /// <summary>
     /// Represents a space that can be booked or rented.
     /// </summary>
     public class Space
     {
-        public Space()
-        {
-            Id = Guid.NewGuid().ToString(); // Initialize with a new GUID as string
-            DateCreated = DateTime.UtcNow; // Set creation date to current date and time
-        }
-
         /// <summary>
         /// The unique identifier for the space.
         /// </summary>
@@ -57,14 +51,18 @@ namespace FluentBlazorAuthTest.Data
         /// <summary>
         /// The price set for the space. Consider implementing a pricing algorithm for standardization.
         /// </summary>
+        [Required]
         [DataType(DataType.Currency)]
+        [RegularExpression(@"[0-9]{1,3}(,[0-9]{3})*(\.[0-9]{2})?",
+         ErrorMessage = "Price must be in [##.##] format.")]
         [Range(0, double.MaxValue, ErrorMessage = "Price must be a positive value")]
-        public decimal? Price { get; set; }
+        public double? Price { get; set; }
 
         /// <summary>
         /// The size of the space. See the referenced Enum for fixed size categories.
+        /// Currently set as a string for testing purposes
         /// </summary>
-        public SizeEnum? Size { get; set; }
+        public string? Size { get; set; } = "Standard";
 
         /// <summary>
         /// A description of the space. (Max Length: 4000)
@@ -75,19 +73,20 @@ namespace FluentBlazorAuthTest.Data
         /// <summary>
         /// URLs of images associated with the space.
         /// </summary>
-        public List<string> ImageUrls { get; set; } = new List<string>();
+        public List<string>? ImageUrls { get; set; } = [];
 
         /// <summary>
         /// Indicates whether the space is available for public booking.
+        /// The default is set to true.
         /// </summary>
-
-        public bool IsPublic { get; set; }
+        /// 
+        public bool IsPublic { get; set; } = true;
 
         /// <summary>
         /// The date and time when the space was created.
         /// </summary>
         [DataType(DataType.DateTime)]
-        public DateTime DateCreated { get; set; }
+        public DateTime? DateCreated { get; set; }
 
         /// <summary>
         /// The date and time of the latest transaction for the space, if any.

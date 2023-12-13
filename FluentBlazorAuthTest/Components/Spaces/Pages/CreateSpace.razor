@@ -1,0 +1,107 @@
+﻿@page "/spaces/create"
+
+@inject FluentBlazorAuthTest.Data.ApplicationDbContext DB
+
+@using FluentBlazorAuthTest.Data.Models
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Identity
+@using FluentBlazorAuthTest.Data
+
+@inject NavigationManager NavigationManager
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject UserManager<ApplicationUser> UserManager
+
+@attribute [Authorize]
+
+<PageTitle>Create</PageTitle>
+
+<h1>Create</h1>
+
+<h4>NewSpace</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <EditForm method="post" Model="NewSpace" OnValidSubmit="AddSpace" FormName="create" Enhance>
+            <DataAnnotationsValidator />
+            <ValidationSummary class="text-danger" />
+            @* TODO: Bind Coordinates to map component pin *@
+@*             <div class="mb-3">
+                <label for="latitude" class="form-label">Latitude:</label> 
+                <InputNumber id="latitude" @bind-Value="NewSpace.Latitude" class="form-control" /> 
+                <ValidationMessage For="() => NewSpace.Latitude" class="text-danger" /> 
+            </div>        
+            <div class="mb-3">
+                <label for="longitude" class="form-label">Longitude:</label> 
+                <InputNumber id="longitude" @bind-Value="NewSpace.Longitude" class="form-control" /> 
+                <ValidationMessage For="() => NewSpace.Longitude" class="text-danger" /> 
+            </div>       *@  
+            <div class="mb-3">
+                <label for="price" class="form-label">Price:</label> 
+                <InputNumber id="price" @bind-Value="NewSpace.Price" class="form-control" /> 
+                <ValidationMessage For="() => NewSpace.Price" class="text-danger" /> 
+            </div>        
+            <div class="mb-3">
+                <label for="size" class="form-label">Size:</label> 
+                <InputText id="size" @bind-Value="NewSpace.Size" class="form-control" /> 
+                <ValidationMessage For="() => NewSpace.Size" class="text-danger" /> 
+            </div>        
+            <div class="mb-3">
+                <label for="description" class="form-label">Description:</label> 
+                <InputTextArea id="description" @bind-Value="NewSpace.Description" class="form-control" /> 
+                <ValidationMessage For="() => NewSpace.Description" class="text-danger" /> 
+            </div>        
+            @* Handle Image Uploading *@
+            <div class="mb-3">
+                <label for="ispublic" class="form-label">IsPublic:</label> 
+                <InputCheckbox id="ispublic" @bind-Value="NewSpace.IsPublic" class="form-check-input" /> 
+                <ValidationMessage For="() => NewSpace.IsPublic" class="text-danger" /> 
+            </div>        
+            <button type="submit" class="btn btn-primary">Create</button>
+        </EditForm>
+    </div>
+</div>
+
+<div>
+    <a href="/spaces">Back to List</a>
+</div>
+
+@code {
+
+    [SupplyParameterFromForm]
+    public Space NewSpace { get; set; } = new();
+    private ApplicationUser? _currentUser;
+
+    public Space ConfigureSpace(Space space)
+    {
+        space.Id = Guid.NewGuid().ToString(); // Initialize with a new GUID as string
+        space.DateCreated = DateTime.UtcNow; // Set creation date to current date and time
+        space.HostId = _currentUser.Id;
+        space.Latitude = 38.897957m;
+        space.Longitude = -77.036560m;
+
+        return space;
+    }
+
+    // To protect from overposting attacks, see https://aka.ms/RazorPagesCRUD
+    public async Task AddSpace()
+    {
+        ConfigureSpace(NewSpace);
+        DB.Space.Add(NewSpace);
+        await DB.SaveChangesAsync();
+        NavigationManager.NavigateTo("/spaces");
+    }
+
+    // Task that grabs the currently logged-in user's ID
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        if (user.Identity != null && user.Identity.IsAuthenticated)
+        {
+            var userId = UserManager.GetUserId(user);
+            if (userId != null)
+                _currentUser = await UserManager.FindByIdAsync(userId);
+        }
+    }
+}
