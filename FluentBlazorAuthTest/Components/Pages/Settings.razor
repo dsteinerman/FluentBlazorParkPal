@@ -38,7 +38,6 @@
     {
         new SettingsOption { Label = "Email", Selected = true },
         new SettingsOption { Label = "Push Notifications", Selected = false },
-       
     };
 
     private List<string> LanguageOptions = new List<string>
@@ -46,24 +45,31 @@
         "English",
         "Spanish",
         "French",
-       
     };
 
     private string SelectedLanguage { get; set; } = "English";
     private bool IsLightTheme { get; set; } = true;
 
-    private void SetTheme(string theme)
-    {
-        IsLightTheme = theme == "light";
-
-        // Apply theme changes here
-        // You can use JavaScript interop or Blazor's mechanism to change the theme
-    }
-
     public class SettingsOption
     {
         public string Label { get; set; }
         public bool Selected { get; set; }
+    }
+    
+
+    private async Task SetTheme(string theme)
+    {
+        IsLightTheme = theme == "light";
+        await JSRuntime.InvokeVoidAsync("applyTheme", theme);
+        Console.WriteLine($"Theme set to: {theme}"); 
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await JSRuntime.InvokeVoidAsync("applyTheme", IsLightTheme ? "light" : "dark");
+        }
     }
 }
 
@@ -115,17 +121,8 @@
         vertical-align: middle;
     }
 
-    /* Light Theme CSS */
-    .light-theme {
-        background-color: #fff;
-        color: #333;
-    }
-
-    /* Dark Theme CSS */
-    .dark-theme {
-        background-color: #333;
-        color: #fff;
-    }
 </style>
+<link rel="stylesheet" href="/HTML/CSS/DarkMode.css">
+<script src="/JS/Darkmode.js"></script>
 
 

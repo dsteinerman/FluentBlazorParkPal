@@ -1,58 +1,30 @@
-﻿/* Dark Mode Styles */
-.dark-mode {
+﻿
+
+body.dark-mode {
+    /* Dark mode styles for the body */
     filter: invert(1);
     background-color: #111;
     color: #fff;
 }
 
-
-    .dark-mode h1,
-    .dark-mode h2,
-    .dark-mode h3,
-    .dark-mode h4,
-    .dark-mode h5,
-    .dark-mode h6,
-    .dark-mode p {
+ 
+    body.dark-mode h1,
+    body.dark-mode h2,
+    body.dark-mode h3,
+    body.dark-mode h4,
+    body.dark-mode h5,
+    body.dark-mode h6,
+    body.dark-mode p {
         color: #fff;
         background-color: transparent;
     }
 
-
-
-    .dark-mode h1,
-    .dark-mode h2,
-    .dark-mode h3,
-    .dark-mode h4,
-    .dark-mode h5,
-    .dark-mode h6 {
-        color: #fff;
-        background-color: transparent;
-    }
-
-
-    .dark-mode p {
-        color: #fff;
-        background-color: transparent;
-    }
-
-
-    .dark-mode a {
+    body.dark-mode a {
         color: #aaa;
         filter: invert(0);
     }
 
-
-    .dark-mode img,
-    .dark-mode svg {
+    body.dark-mode img,
+    body.dark-mode svg {
         filter: invert(0.85);
-    }
-
-    .dark-mode .no-invert {
-        filter: invert(0);
-        color: #fff !important;
-        background-color: transparent;
-    }
-
-    .dark-mode h1 {
-        color: #fff !important;
     }
