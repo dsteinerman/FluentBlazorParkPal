@@ -1,0 +1,177 @@
+﻿<head>
+    <title>Location Finder</title>
+
+    <style>
+
+        html, body {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            overflow: hidden;
+            font-family: Arial, sans-serif;
+        }
+
+        #map {
+            height: calc(100% - 40px);
+            width: 100%;
+        }
+
+        #addressForm {
+            position: absolute;
+            top: 60px; /* Adjust this value to position the form */
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1;
+            background-color: white;
+            padding: 10px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+      
+
+        #addressInput {
+            width: 300px;
+            padding: 8px;
+            margin-right: 5px;
+            border: 1px solid #ccc;
+            border-radius: 20px;
+            font-family: inherit;
+            font-size: 14px;
+            outline: none;
+        }
+
+        .filter-options {
+            display: flex;
+            align-items: center;
+            margin-top: 10px;
+        }
+
+            .filter-options > * {
+                margin-right: 10px;
+                margin-bottom: 10px;
+            }
+
+            .filter-options label,
+            .filter-options select {
+                padding: 8px;
+                border-radius: 20px;
+                font-family: inherit;
+                font-size: 14px;
+                outline: none;
+            }
+
+        #findBtn {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+            #findBtn:hover {
+                background-color: #0056b3;
+            }
+
+
+    </style>
+
+</head>
+<body>
+
+    <form id="addressForm">
+        <input type="text" id="addressInput" placeholder="Enter Address">
+        <button type="button" id="findBtn">Find Location</button>
+        <div class="filter-options">
+            <label for="startDate">Start Date:</label>
+            <input type="date" id="startDate">
+            <label for="endDate">End Date:</label>
+            <input type="date" id="endDate">
+            <label for="size">Size:</label>
+            <select id="size">
+                <option value="sedan">Sedan</option>
+                <option value="suv">SUV</option>
+                <option value="truck">Truck</option>
+
+            </select>
+            <label for="price">Price:</label>
+            <select id="price">
+                <option value="0-25">$0 - $25</option>
+                <option value="25-50">$25 - $50</option>
+                <option value="50-100">$50 - $100</option>
+
+            </select>
+        </div>
+    </form>
+    <div id="map"></div>
+
+    <!--  Bing Maps JS API -->
+    <script src="https://www.bing.com/api/maps/mapcontrol?key=AtqNLHA6sIAE94ZXG6Nzm1tNb_igZu-VlDagoYFnsPc0LL1-v96Pju5pS8VyPTF8"></script>
+    <script src="https://www.bing.com/api/maps/sdkrelease/mapcontrol?callback=GetMap" async defer></script>
+
+    <script>
+        let map;
+
+        //  initialize the map
+        function initMap() {
+            // Creates a new Bing Maps instance in the 'map' div
+            map = new Microsoft.Maps.Map(document.getElementById('map'), {
+                credentials: 'AtqNLHA6sIAE94ZXG6Nzm1tNb_igZu-VlDagoYFnsPc0LL1-v96Pju5pS8VyPTF8',
+                center: new Microsoft.Maps.Location(0, 0),
+                zoom: 2
+            });
+        }
+
+        window.onload = function () {
+            initMap();
+            GetMap();
+        };
+
+        // Event listener for the Find Location button
+        document.getElementById('findBtn').addEventListener('click', function () {
+            // gets Bing Maps data based on the  address
+            let address = document.getElementById('addressInput').value;
+            if (address.trim() !== '') {
+                fetch(`https://dev.virtualearth.net/REST/v1/Locations?query=${encodeURIComponent(address)}&key=AtqNLHA6sIAE94ZXG6Nzm1tNb_igZu-VlDagoYFnsPc0LL1-v96Pju5pS8VyPTF8`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.resourceSets.length > 0 && data.resourceSets[0].resources.length > 0) {
+                            let location = data.resourceSets[0].resources[0].point.coordinates;
+                            map.setView({ center: new Microsoft.Maps.Location(location[0], location[1]), zoom: 14 });
+                            const pin = new Microsoft.Maps.Pushpin(map.getCenter(), {
+                                color: 'blue',
+                                draggable: false
+                            });
+                            map.entities.push(pin);
+                        } else {
+                            alert('Location not found');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                    });
+            } else {
+                alert('Please enter an address');
+            }
+        });
+
+        function GetMap() {
+            const addressInput = document.getElementById('addressInput');
+            const options = { maxResults: 5 };
+            const manager = new Microsoft.Maps.AutosuggestManager(options);
+            manager.attachAutosuggest('#addressInput', '#addressForm', selectedSuggestion);
+            addressInput.addEventListener('input', function () {
+                if (this.value.length > 0) {
+                    manager.getSuggestions({ query: this.value, count: 5, countryCode: 'US' }, function (suggestions) {
+                        console.log(suggestions);
+                    });
+                }
+            });
+        }
+
+        function selectedSuggestion(suggestionResult) {
+            document.getElementById('addressInput').value = suggestionResult.formattedSuggestion;
+        }
+    </script>
+</body>
