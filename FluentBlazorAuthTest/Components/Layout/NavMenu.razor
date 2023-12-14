@@ -8,7 +8,7 @@
 
 <nav>
     <FluentNavMenu Width="250" Collapsible="true" Title="Custom navigation menu">
-        <FluentNavLink Href="/" Match="NavLinkMatch.All" Icon="@Icon.FromImageUrl("/images/home.svg")" IconColor="Color.Accent">Home</FluentNavLink>
+        <FluentNavLink Href="/Home" Match="NavLinkMatch.All" Icon="@Icon.FromImageUrl("/images/home.svg")" IconColor="Color.Accent">Home</FluentNavLink>
         <FluentNavLink Href="auth" Icon="@Icon.FromImageUrl("/images/authrequired.svg")" IconColor="Color.Accent">Auth Required</FluentNavLink>
         
 
@@ -24,7 +24,7 @@
                 </form>
             </Authorized>
             <NotAuthorized>
-                    <FluentNavLink Href="Account/Register">Register</FluentNavLink>
+                    <FluentNavLink Href="/">Register</FluentNavLink>
                     <FluentNavLink Href="Account/Login">Login</FluentNavLink>
             </NotAuthorized>
 
