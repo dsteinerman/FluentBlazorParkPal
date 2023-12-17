@@ -112,7 +112,7 @@
         ConfigureSpace(NewSpace);
         DB.Space.Add(NewSpace);
         await DB.SaveChangesAsync();
-        NavigationManager.NavigateTo("/spaces");
+        NavigationManager.NavigateTo("/Explore");
     }
 
     // Task that grabs the currently logged-in user's ID

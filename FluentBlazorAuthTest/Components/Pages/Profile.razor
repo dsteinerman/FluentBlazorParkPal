@@ -1,0 +1,102 @@
+﻿@page "/profile"
+
+
+<style>
+    form {
+        max-width: 600px;
+        margin: 0 auto;
+        font-family: Arial, sans-serif;
+    }
+
+    label {
+        display: block;
+        margin-bottom: 5px;
+    }
+
+    input[type="text"],
+    input[type="email"],
+    input[type="tel"],
+    textarea,
+    input[type="date"],
+    button {
+        width: calc(100% - 16px);
+        padding: 12px;
+        margin-bottom: 20px;
+        border: 1px solid #ccc;
+        border-radius: 8px;
+        box-sizing: border-box;
+    }
+
+    button {
+        background-color: #007bff;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        padding: 15px 20px;
+        cursor: pointer;
+        transition: background-color 0.3s;
+    }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+</style>
+
+
+<form>
+    <div class="form-section">
+        <div>
+            <label for="name">Name:</label>
+            <input type="text" @bind="name" id="name" required />
+        </div>
+
+        <div>
+            <label for="email">Email:</label>
+            <input type="email" @bind="email" id="email" required />
+        </div>
+
+        <div>
+            <label for="phone">Phone:</label>
+            <input type="tel" pattern="[0-9]{10}" title="Please enter a 10-digit phone number" @bind="phone" id="phone" required />
+        </div>
+
+        <div>
+            <label for="address">Address:</label>
+            <textarea @bind="address" id="address" required></textarea>
+        </div>
+    </div>
+
+    <div class="form-section">
+        <div>
+            <label for="dob">Date of Birth:</label>
+            <input type="date" @bind="dob" id="dob" required />
+        </div>
+
+        <div>
+            <label for="idUpload">ID Upload:</label>
+            <input type="file" id="idUpload" accept="image/*" />
+        </div>
+    </div>
+
+    <button type="button" @onclick="SaveProfile">Save</button>
+</form>
+
+@code {
+    string name { get; set; }
+    string email { get; set; }
+    string phone { get; set; }
+    string address { get; set; }
+    DateTime dob { get; set; }
+
+    async Task SaveProfile()
+    {
+        // Handle form submission logic here
+        // Access the entered values from the respective variables (name, email, etc.)
+    }
+
+
+}
+
+
+
+
