@@ -1,5 +1,5 @@
 ﻿@page "/profile"
-
+@inject IJSRuntime JSRuntime
 
 <style>
     form {
@@ -90,8 +90,8 @@
 
     async Task SaveProfile()
     {
-        // Handle form submission logic here
-        // Access the entered values from the respective variables (name, email, etc.)
+        await JSRuntime.InvokeVoidAsync("alert", "Your profile info has been saved");
+
     }
 
 

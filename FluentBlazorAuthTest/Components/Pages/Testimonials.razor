@@ -1,0 +1,62 @@
+﻿@page "/testimonials"
+
+<h1>Testimonials</h1>
+
+<style>
+    
+    .testimonial-card {
+        border: 1px solid #ccc;
+        padding: 20px;
+        margin-bottom: 20px;
+        border-radius: 8px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .testimonial-content {
+        font-size: 16px;
+        line-height: 1.5;
+    }
+
+        .testimonial-content p {
+            margin-bottom: 10px;
+        }
+
+        .testimonial-content strong {
+            font-weight: bold;
+        }
+
+        .testimonial-content em {
+            font-style: italic;
+        }
+</style>
+
+@foreach (var testimonial in TestimonialsList)
+{
+    <div class="testimonial-card">
+        <div class="testimonial-content">
+            <p>@testimonial.Content</p>
+            <p><strong>- @testimonial.Name</strong></p>
+            <p><em>@testimonial.Location</em></p>
+        </div>
+    </div>
+}
+
+@code {
+    List<Testimonial> TestimonialsList = new List<Testimonial>
+    {
+        new Testimonial { Name = "Emily", Location = "New York", Content = "ParkPal helped me find affordable parking in the city! Great service!" },
+        new Testimonial { Name = "Alex", Location = "San Francisco", Content = "Easy to use app, found a secure parking spot near my office." },
+        new Testimonial { Name = "Sophia", Location = "Los Angeles", Content = "Using ParkPal saved me a lot of time. Highly recommended!" },
+        new Testimonial { Name = "Michael", Location = "Chicago", Content = "Found convenient parking spots every time I used ParkPal. Very useful app!" },
+        new Testimonial { Name = "Olivia", Location = "Miami", Content = "ParkPal made my trip stress-free by providing parking options everywhere I went." },
+        new Testimonial { Name = "William", Location = "Seattle", Content = "ParkPal's intuitive interface made it easy to reserve parking spaces." },
+       
+    };
+
+    public class Testimonial
+    {
+        public string Name { get; set; }
+        public string Location { get; set; }
+        public string Content { get; set; }
+    }
+}
