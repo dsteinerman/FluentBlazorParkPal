@@ -39,6 +39,8 @@
     }
 </style>
 
+<!-- The main section for displaying bookings -->
+
 <main class="bookings-page-content">
     <section class="booking-management">
         <div class="bookings-list">
@@ -63,6 +65,8 @@
 </main>
 
 @code {
+
+    // Class defining the structure of a booking
   
     public class BookingModel
     {
@@ -75,7 +79,8 @@
         public decimal Price { get; set; }
     }
 
- 
+    // List of sample bookings
+
     List<BookingModel> Bookings = new List<BookingModel>
     {
         new BookingModel

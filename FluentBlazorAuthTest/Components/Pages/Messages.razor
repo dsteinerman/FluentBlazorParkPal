@@ -21,12 +21,16 @@
 </div>
 
 @code {
+
+    // List of messages
+
     private List<Message> messages = new List<Message>
     {
         new Message { Text = "Hey", Sender = "received", Timestamp = DateTime.Now.ToShortTimeString() }
     };
     private string currentMessage;
 
+    // Sends a message
     private void SendMessage()
     {
         if (!string.IsNullOrWhiteSpace(currentMessage))
@@ -41,6 +45,8 @@
             currentMessage = string.Empty;
         }
     }
+
+    // Sends a message when Enter key is pressed
 
     private async Task SendMessageOnEnter(KeyboardEventArgs args)
     {

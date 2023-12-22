@@ -42,11 +42,14 @@ document.getElementById('findBtn').addEventListener('click', function () {
     }
 });
 
+//  handles map setup and address suggestions
 function GetMap() {
     const addressInput = document.getElementById('addressInput');
     const options = { maxResults: 5 };
     const manager = new Microsoft.Maps.AutosuggestManager(options);
     manager.attachAutosuggest('#addressInput', '#addressForm', selectedSuggestion);
+
+    // Listening for input and getting suggestions based on user input
     addressInput.addEventListener('input', function () {
         if (this.value.length > 0) {
             manager.getSuggestions({ query: this.value, count: 5, countryCode: 'US' }, function (suggestions) {
