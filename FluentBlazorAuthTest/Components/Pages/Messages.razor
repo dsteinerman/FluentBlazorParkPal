@@ -6,6 +6,8 @@
 
 <h3>Message Center</h3>
 
+<link rel="stylesheet" href="/HTML/CSS/Styles.css" />
+
 <div class="chat-container">
     <div class="chat-messages">
         @foreach (var message in messages)
@@ -64,56 +66,4 @@
     }
 }
 
-<style>
- 
-    .chat-container {
-        max-width: 600px;
-        margin: 20px auto;
-    }
 
-    .chat-messages {
-        height: 200px;
-        overflow-y: scroll;
-        border: 1px solid #ccc;
-        padding: 10px;
-        margin-bottom: 10px;
-    }
-
-   
-    .message {
-        background-color: #f1f0f0;
-        padding: 10px;
-        margin-bottom: 5px;
-        border-radius: 8px;
-        word-wrap: break-word;
-    }
-
-    .sent {
-        text-align: right;
-        background-color: #DCF8C6;
-    }
-
-    
-    .message-info {
-        font-size: 0.8em;
-        color: #888;
-    }
-
-    
-    input[type="text"] {
-        width: calc(100% - 70px);
-        padding: 8px;
-        border-radius: 5px;
-        border: 1px solid #ccc;
-        margin-bottom: 10px;
-    }
-
-    button {
-        padding: 8px 16px;
-        border: none;
-        border-radius: 5px;
-        background-color: #007bff;
-        color: white;
-        cursor: pointer;
-    }
-</style>
