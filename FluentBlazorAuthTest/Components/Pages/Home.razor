@@ -2,6 +2,20 @@
 
 <PageTitle>Home</PageTitle>
 
-<h1>Hello All!</h1>
+<h1>Welcome, </h1>
+
+<AuthorizeView Roles="Admin">Admin!</AuthorizeView>
+
+<AuthorizeView Roles="User">User!</AuthorizeView>
+
+<AuthorizeView>
+    <Authorized>
+        This content is displayed only if the user is Authorized
+    </Authorized>
+    <NotAuthorized>
+        This content is displayed if the user is Not Authorized
+    </NotAuthorized>
+</AuthorizeView>
+
 
 Welcome to ParkPal
