@@ -1,0 +1,55 @@
+﻿@page "/spaces/search"
+
+@using FluentBlazorAuthTest.Data
+@using Microsoft.EntityFrameworkCore
+
+@inject ApplicationDbContext DbContext
+@inject NavigationManager NavigationManager
+
+<h1>Search for a Space</h1>
+
+@if (spaces != null)
+{
+    foreach (var space in spaces)
+    {
+        <FluentCard>
+            <p>Size: @space.Size.ToString()</p>
+            <p>Price: $@space.Price</p>
+            <p>Description: @space.Description</p>
+        </FluentCard>
+    }
+}
+
+
+@code {
+    private IEnumerable<Space> spaces;
+    private int totalSpaces;
+    private int currentPage = 1;
+    private const int pageSize = 5;
+    // private bool isAdmin = false;
+
+    public async Task<(IEnumerable<Space>, int)> GetPublicSpacesAsync(int pageNumber, int pageSize)
+    {
+        var query = DbContext.Spaces
+            .Where(s => s.IsPublic)
+            .OrderBy(s => s.DateCreated); // or any other ordering
+
+        var totalSpaces = await query.CountAsync();
+
+        var spaces = await query.Skip((pageNumber - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+
+        return (spaces, totalSpaces);
+    }
+
+    private async Task LoadSpaces()
+    {
+        (spaces, totalSpaces) = await GetPublicSpacesAsync(currentPage, pageSize);
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadSpaces();
+    }
+}
