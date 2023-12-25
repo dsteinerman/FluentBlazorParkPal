@@ -1,0 +1,31 @@
+﻿<!-- Google Map Embed -->
+
+<iframe key="@DateTime.Now" width="600" height="450" frameborder="0" style="border:0"
+        src="@MapUrl"
+        allowfullscreen></iframe>
+
+@code {
+
+    // TODO: FIND A WAY TO SECURELY STORE THIS KEY SO THAT IT ISN'T JUST SITTING IN THE REPO
+    // Yes, this is a school project. But in a real-life application you have to worry a bit about security and keeping something like this safe.
+
+    private string apiKey = "AIzaSyC9xeR-FS8PtMpGf9sTiy3NrysMX9rcoSI";
+    
+    private string searchQuery = "New York City";
+    
+    private string mode = "place"; // The Google Maps Embed API supports many different modes. For now, we will use "place" for searches.
+    
+    private string MapUrl => $"https://www.google.com/maps/embed/v1/{mode}?key={apiKey}&q={Uri.EscapeDataString(searchQuery)}";
+    
+    [Parameter]
+    public EventCallback<string> OnSearchQueryChanged { get; set; }
+
+    public async Task UpdateMapAsync(string newSearchQuery)
+    {
+        Console.WriteLine($"Updating map with query: {newSearchQuery}");
+        searchQuery = newSearchQuery;
+        await OnSearchQueryChanged.InvokeAsync(newSearchQuery);
+        StateHasChanged();
+    }
+
+}

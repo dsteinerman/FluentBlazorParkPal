@@ -1,95 +1,101 @@
 ﻿@page "/spaces/create"
 
-@inject FluentBlazorAuthTest.Data.ApplicationDbContext DB
 
-@using FluentBlazorAuthTest.Data.Models
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Identity
 @using FluentBlazorAuthTest.Data
+@using System.Diagnostics
+@using System.ComponentModel.DataAnnotations
+@using System.Runtime.InteropServices
 
 @inject NavigationManager NavigationManager
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject UserManager<ApplicationUser> UserManager
+@inject FluentBlazorAuthTest.Data.ApplicationDbContext DB
 
 @attribute [Authorize]
 
-<PageTitle>Create</PageTitle>
+@rendermode InteractiveServer
 
-<h1>Create A Listing </h1>
-<style>
-    .form-label {
-        margin-bottom: 8px;
-        display: block;
-        font-weight: bold;
-    }
+<PageTitle>ParkPal - Create Your Space</PageTitle>
 
-  
-    .form-control {
-        border-radius: 8px;
-        padding: 10px;
-        margin-bottom: 15px;
-        width: calc(100% - 24px); 
-        max-width: 300px; 
-    }
+<h1>Create Your Space</h1>
+<h3><em>Fill in your space's details below</em></h3>
 
-    .btn-primary {
-        border-radius: 8px;
-        padding: 10px 20px;
-        background-color: blue;
-        color: white;
-        border: none;
-        cursor: pointer;
-    }
-</style>
-<h4>NewSpace</h4>
 <hr />
 <div class="row">
     <div class="col-md-4">
+        <FluentCard AreaRestricted="false">
+            <MapSearch @ref="mapComponent" />
+            <input type="text" @bind="searchQuery" />
+            <button @onclick="SubmitQuery">Search</button>
+            @* Embed Google Map *@
+        </FluentCard>
+        <br />
         <EditForm method="post" Model="NewSpace" OnValidSubmit="AddSpace" FormName="create" Enhance>
-            <DataAnnotationsValidator />
-            <ValidationSummary class="text-danger" />
-            @* TODO: Bind Coordinates to map component pin *@
-@*             <div class="mb-3">
-                <label for="latitude" class="form-label">Latitude:</label> 
-                <InputNumber id="latitude" @bind-Value="NewSpace.Latitude" class="form-control" /> 
-                <ValidationMessage For="() => NewSpace.Latitude" class="text-danger" /> 
-            </div>        
+            <DataAnnotationsValidator/>
+            <ValidationSummary class="text-danger"/>
+            <FluentCard AreaRestricted="false">
+                <h4>Listed Price:</h4>
+                <FluentNumberField id="price" @bind-Value="NewSpace.Price" class="form-control"/>
+                <ValidationMessage For="() => NewSpace.Price" class="text-danger"/>
+            </FluentCard>
+            <br/>
+            @* Size Dropdown *@
+            <FluentCard AreaRestricted="false">
+                <h4>Size:</h4>
+                <InputSelect @bind-Value="_selectedSize">
+                    @foreach (var size in SizeOptions)
+                    {
+                        <option value="@size">@size</option>
+                    }
+                </InputSelect>
+                <ValidationMessage For="() => NewSpace.Size" class="text-danger"/>
+            </FluentCard>
+            <br/>
+            @* Description TextArea *@
+            <FluentCard AreaRestricted="false">
+                <h4>Description</h4>
+                <FluentTextArea Appearance="FluentInputAppearance.Filled" id="description" @bind-Value="NewSpace.Description" class="form-control" Placeholder="Write a description..." Spellcheck="true"/>
+                <ValidationMessage For="() => NewSpace.Description" class="text-danger"/>
+            </FluentCard>
+            <br/>
+            @* TODO: Handle Image Uploading *@
+
+            @* IsPublic CheckBox *@
             <div class="mb-3">
-                <label for="longitude" class="form-label">Longitude:</label> 
-                <InputNumber id="longitude" @bind-Value="NewSpace.Longitude" class="form-control" /> 
-                <ValidationMessage For="() => NewSpace.Longitude" class="text-danger" /> 
-            </div>       *@  
-            <div class="mb-3">
-                <label for="price" class="form-label">Price:</label> 
-                <InputNumber id="price" @bind-Value="NewSpace.Price" class="form-control" /> 
-                <ValidationMessage For="() => NewSpace.Price" class="text-danger" /> 
-            </div>        
-            <div class="mb-3">
-                <label for="size" class="form-label">Size:</label> 
-                <InputText id="size" @bind-Value="NewSpace.Size" class="form-control" /> 
-                <ValidationMessage For="() => NewSpace.Size" class="text-danger" /> 
-            </div>        
-            <div class="mb-3">
-                <label for="description" class="form-label">Description:</label> 
-                <InputTextArea id="description" @bind-Value="NewSpace.Description" class="form-control" /> 
-                <ValidationMessage For="() => NewSpace.Description" class="text-danger" /> 
-            </div>        
-            @* Handle Image Uploading *@
-            <div class="mb-3">
-                <label for="ispublic" class="form-label">IsPublic:</label> 
-                <InputCheckbox id="ispublic" @bind-Value="NewSpace.IsPublic" class="form-check-input" /> 
-                <ValidationMessage For="() => NewSpace.IsPublic" class="text-danger" /> 
-            </div>        
-            <button type="submit" class="btn btn-primary">Create</button>
+                <em> I want this Space to be public and available upon submission. </em>
+                <InputCheckbox id="ispublic" @bind-Value="NewSpace.IsPublic" class="form-check-input"/>
+                <ValidationMessage For="() => NewSpace.IsPublic" class="text-danger"/>
+            </div>
+            <br/>
+            <FluentButton Type="ButtonType.Submit" Appearance="Appearance.Accent">Create Space</FluentButton>
         </EditForm>
+
     </div>
 </div>
 
-<div>
-    <a href="/spaces">Back to List</a>
-</div>
-
 @code {
+
+    // Map Search Query Handler
+    private string searchQuery;
+    private MapSearch mapComponent;
+
+    private async Task SubmitQuery()
+    {
+        Console.WriteLine($"Submitting query: {searchQuery}");
+        await mapComponent.UpdateMapAsync(searchQuery);
+    }
+
+    private void HandleSearchQueryChange(string query)
+    {
+        // Additional logic for search-query changes goes here
+    }
+
+    // Values Managing the size-enum dropdown menu
+    private SpaceSize _selectedSize;
+    private IEnumerable<SpaceSize> SizeOptions => Enum.GetValues(typeof(SpaceSize)).Cast<SpaceSize>();
+
 
     [SupplyParameterFromForm]
     public Space NewSpace { get; set; } = new();
@@ -99,7 +105,9 @@
     {
         space.Id = Guid.NewGuid().ToString(); // Initialize with a new GUID as string
         space.DateCreated = DateTime.UtcNow; // Set creation date to current date and time
+        Debug.Assert(_currentUser != null, nameof(_currentUser) + " != null");
         space.HostId = _currentUser.Id;
+        // Replace with coordinates obtained from Geocoding API
         space.Latitude = 38.897957m;
         space.Longitude = -77.036560m;
 
@@ -110,7 +118,7 @@
     public async Task AddSpace()
     {
         ConfigureSpace(NewSpace);
-        DB.Space.Add(NewSpace);
+        DB.Spaces.Add(NewSpace);
         await DB.SaveChangesAsync();
         NavigationManager.NavigateTo("/spaces");
     }
@@ -121,11 +129,35 @@
         var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
         var user = authState.User;
 
-        if (user.Identity != null && user.Identity.IsAuthenticated)
+        if (user.Identity is { IsAuthenticated: true })
         {
             var userId = UserManager.GetUserId(user);
             if (userId != null)
                 _currentUser = await UserManager.FindByIdAsync(userId);
         }
+    }
+
+    // This page's input model.
+    // This handles validation for end-user form input among other things. (e.g., defining data types which can be adapted based on user locale.)
+    private sealed class InputModel
+    {
+        [Required]
+        public string Location { get; set; } = "";
+
+        [Required]
+        [DataType(DataType.Currency)]
+        [RegularExpression(@"[0-9]{1,3}(,[0-9]{3})*(\.[0-9]{2})?",
+            ErrorMessage = "Price must be in [##.##] format.")]
+        [Range(0, double.MaxValue, ErrorMessage = "Price must be a positive value")]
+        public decimal Price { get; set; }
+
+        [Required]
+        public SpaceSize Size { get; set; }
+
+        [Required]
+        public string Description { get; set; } = "";
+
+        [Required]
+        public bool IsPublic { get; set; } = true;
     }
 }
