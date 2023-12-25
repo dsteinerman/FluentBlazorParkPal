@@ -46,6 +46,14 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.UseMigrationsEndPoint();
+
+    // Seeding the database
+    using (var scope = app.Services.CreateScope())
+    {
+        var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        DatabaseSeeder.SeedSpaces(dbContext); // Call the seeding method
+    }
+
 }
 else
 {
