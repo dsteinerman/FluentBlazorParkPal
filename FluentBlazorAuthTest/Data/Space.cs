@@ -45,18 +45,13 @@ namespace FluentBlazorAuthTest.Data
         /// <summary>
         /// The price set for the space. Consider implementing a pricing algorithm for standardization.
         /// </summary>
-        [Required]
-        [DataType(DataType.Currency)]
-        [RegularExpression(@"[0-9]{1,3}(,[0-9]{3})*(\.[0-9]{2})?",
-            ErrorMessage = "Price must be in [##.##] format.")]
-        [Range(0, double.MaxValue, ErrorMessage = "Price must be a positive value")]
         [Column(TypeName = "decimal(8, 2)")]
         public decimal? Price { get; set; }
 
         /// <summary>
         /// The size of the space. See the referenced Enum for fixed size categories.
         /// </summary>
-        public SizeEnum Size { get; set; }
+        public SpaceSize Size { get; set; }
 
         /// <summary>
         /// A description of the space. (Max Length: 4000)
@@ -68,7 +63,7 @@ namespace FluentBlazorAuthTest.Data
         /// Indicates whether the space is available for public booking.
         /// The default is set to true.
         /// </summary>
-        public bool IsPublic { get; set; } = true;
+        public bool IsPublic { get; set; }
 
         /// <summary>
         /// The date and time when the space was created.
@@ -97,7 +92,7 @@ namespace FluentBlazorAuthTest.Data
     }
 
 
-    public enum SizeEnum
+    public enum SpaceSize
     {
         Compact = 1,
         Standard = 2,
