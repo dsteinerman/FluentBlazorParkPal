@@ -89,10 +89,10 @@ namespace FluentBlazorAuthTest.Data
     /// </summary>
     public enum BookingStatus
     {
-        Pending = 1,
-        Confirmed = 2,
-        Cancelled = 3,
-        Completed = 4
+        Pending = 1, // Active
+        Confirmed = 2, // Active
+        Cancelled = 3, // Inactive
+        Completed = 4 // Inactive
         // Add additional statuses as needed
     }
 
