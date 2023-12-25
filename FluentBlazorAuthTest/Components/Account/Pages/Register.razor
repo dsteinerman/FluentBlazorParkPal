@@ -28,9 +28,9 @@
             <hr />
             <FluentValidationSummary class="text-danger" role="alert" />
             <FluentStack Orientation="Orientation.Vertical">
-                <FluentTextField Name="Input.FirstName" @bind-Value="Input.FirstName" AutoComplete="firstname" Required="true" Placeholder="John" Label="FirstName" Style="width: 100%" />
+                <FluentTextField Name="Input.FirstName" @bind-Value="Input.FirstName" AutoComplete="firstname" Required="true" Placeholder="John" Label="First Name" Style="width: 100%" />
                 <ValidationMessage For="() => Input.FirstName" class="text-danger" />
-                <FluentTextField Name="Input.LastName" @bind-Value="Input.LastName" AutoComplete="lastname" Required="true" Placeholder="Smith" Label="FirstName" Style="width: 100%" />
+                <FluentTextField Name="Input.LastName" @bind-Value="Input.LastName" AutoComplete="lastname" Required="true" Placeholder="Smith" Label="Last Name" Style="width: 100%" />
                 <ValidationMessage For="() => Input.LastName" class="text-danger" />
                 <FluentTextField Name="Input.Email" @bind-Value="Input.Email" AutoComplete="username" Required="true" Placeholder="name@example.com" Label="Email" Style="width: 100%" />
                 <ValidationMessage For="() => Input.Email" class="text-danger" />
