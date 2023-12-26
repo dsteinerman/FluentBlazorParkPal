@@ -1,12 +1,21 @@
 ﻿@page "/spaces/search"
 
+@rendermode InteractiveServer
+
 @using FluentBlazorAuthTest.Data
+@using FluentBlazorAuthTest.Data.Services
 @using Microsoft.EntityFrameworkCore
 
 @inject ApplicationDbContext DbContext
 @inject NavigationManager NavigationManager
+@inject ISpaceService SpaceService
+
+<PageTitle>Search for a Space</PageTitle>
 
 <h1>Search for a Space</h1>
+<FluentButton Appearance="Appearance.Outline" @onclick="AddSpace">Add a new Space</FluentButton>
+
+
 
 @if (spaces != null)
 {
@@ -16,9 +25,21 @@
             <p>Size: @space.Size.ToString()</p>
             <p>Price: $@space.Price</p>
             <p>Description: @space.Description</p>
+            <FluentButton Appearance="Appearance.Accent" @onclick="@(() => EditSpace(space.Id))">Edit</FluentButton>
+            <FluentButton Appearance="Appearance.Lightweight" Color="Red" @onclick="@(() => DeleteSpace(space.Id))">Delete</FluentButton>
+            //make admin only
+            //make confirmation window
         </FluentCard>
     }
+
 }
+@if (spaces == null)
+{
+    <p><em>Loading Spaces...</em></p>
+}
+
+
+
 
 
 @code {
@@ -50,6 +71,23 @@
 
     protected override async Task OnInitializedAsync()
     {
-        await LoadSpaces();
+        await Task.Delay(500);
+        spaces = await SpaceService.GetAllSpacesAsync();
     }
+
+    void EditSpace(string Id)
+    {
+        NavigationManager.NavigateTo($"/edit-space/{Id}");
+    }
+    async Task DeleteSpace(string Id)
+    {
+        await SpaceService.DeleteSpaceAsync(Id);
+        spaces = await SpaceService.GetAllSpacesAsync();
+    }
+    void AddSpace()
+    {
+        NavigationManager.NavigateTo("/edit-space/");
+    }
+
+
 }

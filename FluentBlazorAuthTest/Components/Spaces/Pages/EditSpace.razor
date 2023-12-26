@@ -1,0 +1,92 @@
+﻿@page "/edit-space"
+@page "/edit-space/{Id}"
+@using FluentBlazorAuthTest.Data
+@using FluentBlazorAuthTest.Data.Services
+@inject ISpaceService SpaceService
+@inject NavigationManager NavigationManager
+
+@rendermode InteractiveServer
+
+<h3>EditSpace</h3>
+
+@if(Id is null)
+{
+    <PageTitle>Add a New Space</PageTitle>
+    <h3>Add a New Space</h3>
+    //set current user id to be host id
+    //ispublic
+    // latitude
+    //laugitude
+
+
+}
+else
+{
+    <PageTitle>Edit "@CurrentSpace.Id"</PageTitle>
+    <h3>Edit "@CurrentSpace.Id"</h3>
+}
+
+<EditForm Model="CurrentSpace" OnSubmit="HandleSubmit">
+    <div>
+        <label for="size">Size</label>
+        <InputSelect id="size"   @bind-Value="CurrentSpace.Size">
+            @foreach (var size in Enum.GetValues(typeof(SpaceSize)))
+            {
+                <option value="@size">@size</option>
+            }
+        </InputSelect>
+    </div>
+    <div>
+        <label for="price">Price</label>
+        <InputNumber id="price" @bind-Value="CurrentSpace.Price" />
+    </div>
+    <div>
+        <label for="description">Description</label>
+        <InputText id="description" @bind-Value="CurrentSpace.Description" />
+    </div>
+    <div>
+        <label for="isPublic">Post space?</label>
+        <InputRadioGroup id="isPublic" @bind-Value="CurrentSpace.IsPublic">
+            <InputRadio Value="true" /> Yes
+            <InputRadio Value="false" /> No
+        </InputRadioGroup>
+    </div>
+    <FluentButton Type="ButtonType.Submit" Appearance="Appearance.Accent">Save</FluentButton>
+
+</EditForm>
+
+
+@code {
+    [Parameter]
+    public string? Id { get; set; }
+
+    public Space CurrentSpace { get; set; } = new();
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if(Id is not null)
+        {
+            var space = await SpaceService.GetSpaceByIdAsync((string)Id);
+            if (space is not null)
+                CurrentSpace = space;
+        }
+    }
+
+    async Task HandleSubmit()
+    {
+        if(Id is not null)
+        {
+            //update
+            await SpaceService.UpdateSpaceAsync(CurrentSpace, (string)Id);
+            NavigationManager.NavigateTo("/spaces/search");
+        }
+        else
+        {
+            //add
+            await SpaceService.AddSpaceAsync(CurrentSpace);
+            NavigationManager.NavigateTo("/spaces/search");
+        }
+
+    }
+
+}

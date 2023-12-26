@@ -15,10 +15,12 @@ public interface ISpaceService
 
     /* Update */
 
-    Task UpdateSpaceAsync(Space space);
+    Task UpdateSpaceAsync(Space space, string spaceId);
 
     /* Delete */
 
     Task DeleteSpaceAsync(string spaceId);
+
+    Task AddSpaceAsync(Space space);
 
 }

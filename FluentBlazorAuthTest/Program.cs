@@ -1,6 +1,7 @@
 ﻿using FluentBlazorAuthTest.Components;
 using FluentBlazorAuthTest.Components.Account;
 using FluentBlazorAuthTest.Data;
+using FluentBlazorAuthTest.Data.Services;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -18,6 +19,7 @@ builder.Services.AddCascadingAuthenticationState();
 builder.Services.AddScoped<IdentityUserAccessor>();
 builder.Services.AddScoped<IdentityRedirectManager>();
 builder.Services.AddScoped<AuthenticationStateProvider, IdentityRevalidatingAuthenticationStateProvider>();
+builder.Services.AddScoped<ISpaceService, SpaceService>();
 
 builder.Services.AddAuthentication(options =>
     {
