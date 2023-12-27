@@ -96,6 +96,6 @@ namespace FluentBlazorAuthTest.Data
     {
         Compact = 1,
         Standard = 2,
-        Xl = 3
+        XL = 3
     }
 }
