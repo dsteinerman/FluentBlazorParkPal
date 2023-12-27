@@ -1,38 +1,59 @@
 ﻿@page "/spaces/search"
 
 @using FluentBlazorAuthTest.Data
+@using FluentBlazorAuthTest.Services
+@using Microsoft.AspNetCore.Authorization
 @using Microsoft.EntityFrameworkCore
 
+@inject GeocodingService GeocodingService
 @inject ApplicationDbContext DbContext
 @inject NavigationManager NavigationManager
 
-<h1>Search for a Space</h1>
+@attribute [Authorize]
 
-@if (spaces != null)
+@rendermode InteractiveServer
+
+<h1>Search for a Space</h1>
+<FluentDivider Role="DividerRole.Separator"></FluentDivider>
+<FluentSpacer Width="25"></FluentSpacer>
+
+@if (spaceViewModels != null)
 {
-    foreach (var space in spaces)
+    foreach (var viewModel in spaceViewModels)
     {
-        <FluentCard>
-            <p>Size: @space.Size.ToString()</p>
-            <p>Price: $@space.Price</p>
-            <p>Description: @space.Description</p>
+        <FluentSpacer Width="25"></FluentSpacer>
+        <FluentCard Width="80%">
+            <p>Location: @viewModel.Address</p>
+            <p>Size: @viewModel.Space.Size.ToString()</p>
+            <p>Price: $@viewModel.Space.Price</p>
+            <p>Description: @viewModel.Space.Description</p>
         </FluentCard>
+        <FluentSpacer Width="25"></FluentSpacer>
     }
 }
 
 
 @code {
-    private IEnumerable<Space> spaces;
+    private IEnumerable<SpaceViewModel> spaceViewModels;
     private int totalSpaces;
     private int currentPage = 1;
-    private const int pageSize = 5;
-    // private bool isAdmin = false;
+    private const int pageSize = 10;
 
-    public async Task<(IEnumerable<Space>, int)> GetPublicSpacesAsync(int pageNumber, int pageSize)
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadSpaces();
+    }
+
+    private async Task LoadSpaces()
+    {
+        (spaceViewModels, totalSpaces) = await GetPublicSpacesAsync(currentPage, pageSize);
+    }
+
+    public async Task<(IEnumerable<SpaceViewModel>, int)> GetPublicSpacesAsync(int pageNumber, int pageSize)
     {
         var query = DbContext.Spaces
             .Where(s => s.IsPublic)
-            .OrderBy(s => s.DateCreated); // or any other ordering
+            .OrderBy(s => s.DateCreated);
 
         var totalSpaces = await query.CountAsync();
 
@@ -40,16 +61,25 @@
             .Take(pageSize)
             .ToListAsync();
 
-        return (spaces, totalSpaces);
+        var spaceViewModels = new List<SpaceViewModel>();
+
+        foreach (var space in spaces)
+        {
+            var address = await GeocodingService.ReverseGeocodeCoordinates(space.Latitude, space.Longitude);
+            spaceViewModels.Add(new SpaceViewModel { Space = space, Address = address });
+        }
+
+        return (spaceViewModels, totalSpaces);
     }
 
-    private async Task LoadSpaces()
+
+    // This View-Model is used in case we need to process any information in the respective table of the database, without cluttering the actual schema with redundant information
+    // As of now, we will be converting coordinates to addresses "on-the-fly"
+    // This is to keep a uniform and universal standard of storing location data in the database, without having to bog down the database itself with external factors such as localization and different languages.
+    public class SpaceViewModel
     {
-        (spaces, totalSpaces) = await GetPublicSpacesAsync(currentPage, pageSize);
+        public Space Space { get; set; }
+        public string Address { get; set; }
     }
 
-    protected override async Task OnInitializedAsync()
-    {
-        await LoadSpaces();
-    }
 }
