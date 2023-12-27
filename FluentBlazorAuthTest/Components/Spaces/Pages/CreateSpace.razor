@@ -7,10 +7,12 @@
 @using System.Diagnostics
 @using System.ComponentModel.DataAnnotations
 @using System.Runtime.InteropServices
+@using FluentBlazorAuthTest.Services
 
 @inject NavigationManager NavigationManager
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject UserManager<ApplicationUser> UserManager
+@inject GeocodingService GeocodingService
 @inject FluentBlazorAuthTest.Data.ApplicationDbContext DB
 
 @attribute [Authorize]
@@ -27,8 +29,12 @@
     <div class="col-md-4">
         <FluentCard AreaRestricted="false">
             <MapSearch @ref="mapComponent" />
-            <input type="text" @bind="searchQuery" />
-            <button @onclick="SubmitQuery">Search</button>
+            <input type="text" @bind="searchQuery" required="true"/>
+            <FluentButton IconEnd="@(new Icons.Regular.Size16.Globe())"
+                          Appearance="Appearance.Accent"
+                          OnClick="@SubmitQuery">
+                Search
+            </FluentButton>
             @* Embed Google Map *@
         </FluentCard>
         <br />
@@ -60,8 +66,6 @@
                 <ValidationMessage For="() => NewSpace.Description" class="text-danger"/>
             </FluentCard>
             <br/>
-            @* TODO: Handle Image Uploading *@
-
             @* IsPublic CheckBox *@
             <div class="mb-3">
                 <em> I want this Space to be public and available upon submission. </em>
@@ -81,10 +85,24 @@
     private string searchQuery;
     private MapSearch mapComponent;
 
+    // Map Geocoding parameters
+    private decimal latitude;
+    private decimal longitude;
+
     private async Task SubmitQuery()
     {
         Console.WriteLine($"Submitting query: {searchQuery}");
         await mapComponent.UpdateMapAsync(searchQuery);
+
+        // Call the GeocodingService to get coordinates
+        var (Latitude, Longitude, Status) = await GeocodingService.GeocodeAddress(searchQuery);
+
+        if (Status == "OK")
+        {
+            // Update the Space entity with the obtained coordinates
+            NewSpace.Latitude = (decimal)Latitude;
+            NewSpace.Longitude = (decimal)Longitude;
+        }
     }
 
     private void HandleSearchQueryChange(string query)
@@ -99,17 +117,16 @@
 
     [SupplyParameterFromForm]
     public Space NewSpace { get; set; } = new();
-    private ApplicationUser? _currentUser;
+    private ApplicationUser? currentUser;
 
     public Space ConfigureSpace(Space space)
     {
-        space.Id = Guid.NewGuid().ToString(); // Initialize with a new GUID as string
-        space.DateCreated = DateTime.UtcNow; // Set creation date to current date and time
-        Debug.Assert(_currentUser != null, nameof(_currentUser) + " != null");
-        space.HostId = _currentUser.Id;
-        // Replace with coordinates obtained from Geocoding API
-        space.Latitude = 38.897957m;
-        space.Longitude = -77.036560m;
+        Debug.Assert(currentUser != null, nameof(currentUser) + " != null");
+        space.HostId = currentUser.Id;
+        space.Size = _selectedSize;
+        // Use the coordinates obtained from the Geocoding API
+        space.Latitude = NewSpace.Latitude;
+        space.Longitude = NewSpace.Longitude;
 
         return space;
     }
@@ -133,7 +150,7 @@
         {
             var userId = UserManager.GetUserId(user);
             if (userId != null)
-                _currentUser = await UserManager.FindByIdAsync(userId);
+                currentUser = await UserManager.FindByIdAsync(userId);
         }
     }
 
@@ -158,6 +175,6 @@
         public string Description { get; set; } = "";
 
         [Required]
-        public bool IsPublic { get; set; } = true;
+        public bool IsPublic { get; set; }
     }
 }
