@@ -8,12 +8,13 @@
 @using System.ComponentModel.DataAnnotations
 @using System.Runtime.InteropServices
 @using FluentBlazorAuthTest.Services
+@using Microsoft.EntityFrameworkCore
 
 @inject NavigationManager NavigationManager
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject UserManager<ApplicationUser> UserManager
 @inject GeocodingService GeocodingService
-@inject FluentBlazorAuthTest.Data.ApplicationDbContext DB
+@inject IDbContextFactory<ApplicationDbContext> DbContextFactory
 
 @attribute [Authorize]
 
@@ -134,9 +135,10 @@
     // To protect from overposting attacks, see https://aka.ms/RazorPagesCRUD
     public async Task AddSpace()
     {
+        using var dbContext = DbContextFactory.CreateDbContext();
         ConfigureSpace(NewSpace);
-        DB.Spaces.Add(NewSpace);
-        await DB.SaveChangesAsync();
+        dbContext.Spaces.Add(NewSpace);
+        await dbContext.SaveChangesAsync();
         NavigationManager.NavigateTo("/spaces");
     }
 
