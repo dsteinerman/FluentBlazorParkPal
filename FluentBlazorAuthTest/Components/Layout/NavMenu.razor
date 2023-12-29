@@ -9,18 +9,18 @@
 <nav>
     <FluentNavMenu Width="250" Collapsible="true" Title="Custom navigation menu">
         <FluentNavLink Href="/" Match="NavLinkMatch.All" Icon="@(new Icons.Filled.Size20.Home())" IconColor="Color.Accent">Home</FluentNavLink>
-
-        <FluentNavLink Href="/spaces/create" Match="NavLinkMatch.All" Icon="@(new Icons.Filled.Size20.AddCircle())" IconColor="Color.Accent">Create Listing</FluentNavLink>
-
-        <FluentNavLink Href="/Messages" Match="NavLinkMatch.All" Icon="@(new Icons.Filled.Size20.Chat())" IconColor="Color.Accent">Messages</FluentNavLink>
-
+        
         <FluentNavLink Href="/spaces/search" Match="NavLinkMatch.All" Icon="@(new Icons.Filled.Size20.VehicleCar())" IconColor="Color.Accent">Search Spaces</FluentNavLink>
 
-        <FluentNavLink Href="/Book" Match="NavLinkMatch.All" Icon="@(new Icons.Filled.Size20.BookmarkMultiple())" IconColor="Color.Accent">Your Bookings</FluentNavLink>
+        <FluentNavLink Href="/spaces/create" Match="NavLinkMatch.All" Icon="@(new Icons.Filled.Size20.AddCircle())" IconColor="Color.Accent">Create Spaces</FluentNavLink>
 
-        <FluentNavLink Href="/Settings" Match="NavLinkMatch.All" Icon="@(new Icons.Filled.Size20.ArchiveSettings())" IconColor="Color.Accent">Settings</FluentNavLink>
+        <FluentNavLink Href="/Book" Match="NavLinkMatch.All" Icon="@(new Icons.Filled.Size20.BookmarkMultiple())" IconColor="Color.Accent">Your Bookings</FluentNavLink>
+        
+        <FluentNavLink Href="/Messages" Match="NavLinkMatch.All" Icon="@(new Icons.Filled.Size20.Chat())" IconColor="Color.Accent">Messages</FluentNavLink>
         
         <FluentNavLink Href="/Support" Match="NavLinkMatch.All" Icon="@(new Icons.Filled.Size20.PersonSupport())" IconColor="Color.Accent">Support</FluentNavLink>
+        
+        <FluentNavLink Href="/Settings" Match="NavLinkMatch.All" Icon="@(new Icons.Filled.Size20.ArchiveSettings())" IconColor="Color.Accent">Settings</FluentNavLink>
 
         <AuthorizeView>
             <Authorized>
