@@ -33,6 +33,11 @@ namespace FluentBlazorAuthTest.Data
         public decimal Price { get; set; }
 
         /// <summary>
+        /// Identifier for a Booking's current activity.
+        /// </summary>
+        public bool IsActive { get; set; }
+
+        /// <summary>
         /// Current status of the booking (e.g., Pending, Confirmed, Cancelled).
         /// </summary>
         public BookingStatus BookingStatus { get; set; }
@@ -89,10 +94,10 @@ namespace FluentBlazorAuthTest.Data
     /// </summary>
     public enum BookingStatus
     {
-        Pending = 1, // Active
-        Confirmed = 2, // Active
-        Cancelled = 3, // Inactive
-        Completed = 4 // Inactive
+        Pending = 1,    // Active
+        Confirmed = 2,  // Active
+        Cancelled = 3,  // Inactive
+        Completed = 4   // Inactive
         // Add additional statuses as needed
     }
 
