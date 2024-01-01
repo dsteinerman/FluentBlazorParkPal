@@ -74,7 +74,7 @@ namespace FluentBlazorAuthTest.Data
         /// Indicates whether the space is vacant and available to book.
         /// This field is independent of <see cref="Space.IsPublic"/>
         /// </summary>
-        public bool IsVacant { get; set; }
+        public bool IsVacant { get; set; } = true;
 
         /// <summary>
         /// The date and time when the space was created.
