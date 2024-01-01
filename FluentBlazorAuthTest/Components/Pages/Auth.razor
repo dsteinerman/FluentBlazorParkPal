@@ -18,6 +18,7 @@
     @if (currentUser != null)
     {
         <p>Hello @currentUser.FirstName @currentUser.LastName!</p>
+
         <p>Your current username & email is @context.User.Identity?.Name</p>
     } else
     {

@@ -10,6 +10,7 @@
 @inject IBookingService BookingService
 @inject NavigationManager NavigationManager
 @inject AuthenticationStateProvider AuthenticationStateProvider
+@inject UserManager<ApplicationUser> UserManager
 
 @rendermode InteractiveServer
 
@@ -34,7 +35,7 @@ else
 <EditForm Model="CurrentBooking" OnSubmit="HandleSubmit">
 
     <div>
-        @if (Id is not null)
+        @if (user != null && user.Identity.IsAuthenticated)
         {
             <div>
                 <label>Booking ID:</label>
@@ -60,6 +61,27 @@ else
                 <label>Client User ID:</label>
                 <p>@CurrentBooking.ClientUserId</p>
             </div>
+
+            <div>
+                <label for="customerNotes">Customer Notes:</label>
+                <InputTextArea id="customerNotes" @bind-Value="CurrentBooking.CustomerNotes" />
+            </div>
+            @if (user.IsInRole("Admin"))
+             {
+                <div>
+                      <label for="adminNotes">Admin Notes:</label>
+                      <InputTextArea id="adminNotes" @bind-Value="CurrentBooking.AdminNotes" />
+                 </div>
+             }
+            <div>
+                <label for="startDateTime">Start Date & Time:</label>
+                <InputDate id="startDateTime" @bind-Value="CurrentBooking.StartDateTime" min="@DateTime.Now.ToString("yyyy-MM-ddTHH:mm")" />
+            </div>
+
+            <div>
+                <label for="endDateTime">End Date & Time:</label>
+                <InputDate id="endDateTime" @bind-Value="CurrentBooking.EndDateTime" min="@DateTime.Now.ToString("yyyy-MM-ddTHH:mm")" />
+            </div>
                     
         }
 
@@ -79,6 +101,9 @@ else
     public Booking CurrentBooking { get; set; } = new();
     private bool IsExistingBooking { get; set; } = false;
 
+    private ClaimsPrincipal user;
+    private ApplicationUser currentUser;
+
 
 
     protected override async Task OnInitializedAsync()
@@ -94,6 +119,14 @@ else
                 CurrentBooking = booking;
                 IsExistingBooking = true;
             }
+        }
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        user = authState.User; // Store the user in the property
+
+        if (user.Identity.IsAuthenticated)
+        {
+            var userId = UserManager.GetUserId(user);
+            currentUser = await UserManager.FindByIdAsync(userId);
         }
         CurrentBooking.ClientUserId = await GetCurrentUserIdAsync();
     }
