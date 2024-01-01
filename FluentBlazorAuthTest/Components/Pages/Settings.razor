@@ -5,7 +5,10 @@
 
 <h3>Settings</h3>
 
+
 <div class="settings-container @(IsLightTheme ? "light-theme" : "dark-theme")">
+
+   
     <h4>Notification Preferences</h4>
     <div class="notification-options">
         @foreach (var option in NotificationOptions)
@@ -16,6 +19,7 @@
         }
     </div>
 
+   
     <h4>Language</h4>
     <div class="language-selector">
         <select @bind="SelectedLanguage">
@@ -26,6 +30,7 @@
         </select>
     </div>
 
+   
     <h4>Theme</h4>
     <div class="theme-selector">
         <label><input type="radio" name="theme" value="light" checked="@IsLightTheme" @onchange="e => SetTheme(e.Value.ToString())" /> Light</label>
@@ -34,12 +39,14 @@
 </div>
 
 @code {
+    // List of notification options
     private List<SettingsOption> NotificationOptions = new List<SettingsOption>
     {
         new SettingsOption { Label = "Email", Selected = true },
         new SettingsOption { Label = "Push Notifications", Selected = false },
     };
 
+    // List of language options
     private List<string> LanguageOptions = new List<string>
     {
         "English",
@@ -47,81 +54,38 @@
         "French",
     };
 
+    // Selected language from LanguageOptions
     private string SelectedLanguage { get; set; } = "English";
+
+    // Boolean to track the selected theme
     private bool IsLightTheme { get; set; } = true;
 
+    // Settings option structure
     public class SettingsOption
     {
         public string Label { get; set; }
         public bool Selected { get; set; }
     }
-    
 
+    // Method to set the theme based on user selection
     private async Task SetTheme(string theme)
     {
-        IsLightTheme = theme == "light";
-        await JSRuntime.InvokeVoidAsync("applyTheme", theme);
-        Console.WriteLine($"Theme set to: {theme}"); 
+        IsLightTheme = theme == "light"; // Updating the selected theme
+        await JSRuntime.InvokeVoidAsync("applyTheme", theme); // Applying the theme through JavaScript
+        Console.WriteLine($"Theme set to: {theme}"); // Logging the theme change
     }
 
+    // Method called after rendering to apply the theme
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
-            await JSRuntime.InvokeVoidAsync("applyTheme", IsLightTheme ? "light" : "dark");
+            await JSRuntime.InvokeVoidAsync("applyTheme", IsLightTheme ? "light" : "dark"); // Applying the theme on first render
         }
     }
 }
 
-<style>
-  
-    h3 {
-        font-size: 1.5em;
-        margin-bottom: 20px;
-    }
-
-    .settings-container {
-        max-width: 600px;
-        margin: 0 auto;
-        padding: 20px;
-        border: 1px solid #ccc;
-        border-radius: 8px;
-        background-color: #fff;
-        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    }
-
-        .settings-container h4 {
-            margin-top: 15px;
-            margin-bottom: 10px;
-            font-size: 1.2em;
-        }
-
-    .notification-options div {
-        margin-bottom: 8px;
-    }
-
-    .language-selector select {
-        width: 100%;
-        padding: 8px;
-        border-radius: 5px;
-        border: 1px solid #ccc;
-        font-size: 16px;
-        outline: none;
-    }
-
-    .theme-selector label {
-        display: block;
-        margin-bottom: 5px;
-    }
-
-  
-    input[type="radio"],
-    input[type="checkbox"] {
-        margin-right: 5px;
-        vertical-align: middle;
-    }
-
-</style>
+<link rel="stylesheet" href="/HTML/CSS/Styles.css" />
 <link rel="stylesheet" href="/HTML/CSS/DarkMode.css">
 <script src="/JS/Darkmode.js"></script>
 

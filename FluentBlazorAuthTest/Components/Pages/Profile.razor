@@ -1,0 +1,63 @@
+﻿@page "/profile"
+@inject IJSRuntime JSRuntime
+
+
+<link rel="stylesheet" href="/HTML/CSS/Styles.css" />
+
+<form>
+    <div class="form-section">
+        <div>
+            <label for="name">Name:</label>
+            <input type="text" @bind="name" id="name" required />
+        </div>
+
+        <div>
+            <label for="email">Email:</label>
+            <input type="email" @bind="email" id="email" required />
+        </div>
+
+        <div>
+            <label for="phone">Phone:</label>
+            <input type="tel" pattern="[0-9]{10}" title="Please enter a 10-digit phone number" @bind="phone" id="phone" required />
+        </div>
+
+        <div>
+            <label for="address">Address:</label>
+            <textarea @bind="address" id="address" required></textarea>
+        </div>
+    </div>
+
+    <div class="form-section">
+        <div>
+            <label for="dob">Date of Birth:</label>
+            <input type="date" @bind="dob" id="dob" required />
+        </div>
+
+        <div>
+            <label for="idUpload">ID Upload:</label>
+            <input type="file" id="idUpload" accept="image/*" />
+        </div>
+    </div>
+
+    <button type="button" @onclick="SaveProfile">Save</button>
+</form>
+
+@code {
+    string name { get; set; }
+    string email { get; set; }
+    string phone { get; set; }
+    string address { get; set; }
+    DateTime dob { get; set; }
+
+    async Task SaveProfile()
+    {
+        await JSRuntime.InvokeVoidAsync("alert", "Your profile info has been saved");
+
+    }
+
+
+}
+
+
+
+

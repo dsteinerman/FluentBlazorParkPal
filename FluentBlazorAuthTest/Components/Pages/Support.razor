@@ -75,6 +75,8 @@
 
     bool IsExpanded(int id) => activeAccordionId == id.ToString();
 
+    //  triggered on accordion item change
+
     void OnAccordionItemChange(FluentAccordionItem item)
     {
         if (item != null)

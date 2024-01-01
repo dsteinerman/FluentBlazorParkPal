@@ -1,4 +1,4 @@
-﻿@page "/Account/Register"
+﻿@page "/"
 
 @using System.ComponentModel.DataAnnotations
 @using System.Text
@@ -6,6 +6,7 @@
 @using Microsoft.AspNetCore.Identity
 @using Microsoft.AspNetCore.WebUtilities
 @using FluentBlazorAuthTest.Data
+@using Microsoft.EntityFrameworkCore
 
 @inject UserManager<ApplicationUser> UserManager
 @inject IUserStore<ApplicationUser> UserStore
@@ -70,6 +71,7 @@
         var emailStore = GetEmailStore();
         await emailStore.SetEmailAsync(user, Input.Email, CancellationToken.None);
         var result = await UserManager.CreateAsync(user, Input.Password);
+        
 
         if (!result.Succeeded)
         {
@@ -77,10 +79,29 @@
             return;
         }
 
+        if (user.Email != null && user.Email.ToLower().StartsWith("admin"))
+        {
+            var adminUsers = await UserManager.Users.Where(x => x.Email != null && x.Email.Contains("admin")).ToListAsync();
+            if (adminUsers.Count() > 1)
+            {
+                await UserManager.AddToRoleAsync(user, "User");
+            }
+            else
+            {
+                await UserManager.AddToRoleAsync(user, "Admin");
+            }
+        }
+        else
+        {
+            await UserManager.AddToRoleAsync(user, "User");
+        }
+
         Logger.LogInformation("User created a new account with password.");
 
         var userId = await UserManager.GetUserIdAsync(user);
         var code = await UserManager.GenerateEmailConfirmationTokenAsync(user);
+
+
         code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
         var callbackUrl = NavigationManager.GetUriWithQueryParameters(
             NavigationManager.ToAbsoluteUri("Account/ConfirmEmail").AbsoluteUri,
