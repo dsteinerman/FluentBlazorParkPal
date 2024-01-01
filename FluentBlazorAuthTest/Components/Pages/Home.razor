@@ -1,4 +1,6 @@
 ﻿@page "/"
+@inject NavigationManager NavigationManager
+
 
 <PageTitle>Home</PageTitle>
 
@@ -6,14 +8,11 @@
 
 <AuthorizeView Roles="User">User!</AuthorizeView>
 
-<!--
-<AuthorizeView>
-    <Authorized>
-        This content is displayed only if the user is Authorized
-    </Authorized>
-    <NotAuthorized>
-        This content is displayed if the user is Not Authorized
-    </NotAuthorized>
-</AuthorizeView>
--->
-Welcome to ParkPal!
+<div style="margin-top: 20px; font-size: 42px; font-weight: bold;">
+    Welcome to <strong>ParkPal!</strong>
+</div>
+
+<div style="margin-top: 20px;">
+    <p>Start your ParkPal Journey <a href="https://localhost:7275/spaces/create">here</a>.</p>
+</div>
+

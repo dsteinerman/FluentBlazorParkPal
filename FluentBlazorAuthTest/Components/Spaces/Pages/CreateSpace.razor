@@ -135,7 +135,7 @@
         Console.WriteLine($"Adding Space with Address: {NewSpace.Address}");
         dbContext.Spaces.Add(NewSpace);
         await dbContext.SaveChangesAsync();
-        NavigationManager.NavigateTo("/spaces");
+        NavigationManager.NavigateTo("/spaces/search");
     }
 
     protected override async Task OnInitializedAsync()
