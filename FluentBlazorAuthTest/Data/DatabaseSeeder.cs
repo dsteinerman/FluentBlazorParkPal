@@ -15,6 +15,7 @@ public static class DatabaseSeeder
                 .RuleFor(s => s.HostId, f => null) // Assuming HostId can be null for seeding
                 .RuleFor(s => s.Latitude, f => (decimal?)Math.Round(f.Address.Latitude(), 6))
                 .RuleFor(s => s.Longitude, f => (decimal?)Math.Round(f.Address.Longitude(), 6))
+                .RuleFor(s => s.Address, f => f.Address.FullAddress())
                 .RuleFor(s => s.Price, f => Math.Round(f.Random.Decimal(50, 500), 2))
                 .RuleFor(s => s.Size, f => f.PickRandom<SpaceSize>())
                 .RuleFor(s => s.Description, f => f.Lorem.Paragraph())
