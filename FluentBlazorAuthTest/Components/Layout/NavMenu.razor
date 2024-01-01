@@ -1,5 +1,5 @@
-﻿@* To get access to all Fluent UI System icons, install the Microsoft.FluentUI.AspNetCore.Compoents.Icon package *@
-@* See all the diffeent ways on how to use icons at https://www.fluentui-blazor.net/Icon *@
+﻿@* To get access to all Fluent UI System icons, install the Microsoft.FluentUI.AspNetCore.Components.Icon package *@
+@* See all the different ways on how to use icons at https://www.fluentui-blazor.net/Icon *@
 @rendermode InteractiveServer
 
 @implements IDisposable
@@ -8,45 +8,35 @@
 
 <nav>
     <FluentNavMenu Width="250" Collapsible="true" Title="Custom navigation menu">
-        <!-- <FluentNavLink Href="/Home" Match="NavLinkMatch.All" Icon="@Icon.FromImageUrl("/images/home.svg")" IconColor="Color.Accent">Home</FluentNavLink>  -->
-        <FluentNavLink Href="auth" Icon="@Icon.FromImageUrl("/images/authrequired.svg")" IconColor="Color.Accent">Auth Required</FluentNavLink>
+        <FluentNavLink Href="/" Match="NavLinkMatch.All" Icon="@(new Icons.Filled.Size20.Home())" IconColor="Color.Accent">Home</FluentNavLink>
         
+        <FluentNavLink Href="/spaces/search" Match="NavLinkMatch.All" Icon="@(new Icons.Filled.Size20.VehicleCar())" IconColor="Color.Accent">Search Spaces</FluentNavLink>
 
+        <FluentNavLink Href="/spaces/create" Match="NavLinkMatch.All" Icon="@(new Icons.Filled.Size20.AddCircle())" IconColor="Color.Accent">Create Spaces</FluentNavLink>
 
+        <FluentNavLink Href="/Book" Match="NavLinkMatch.All" Icon="@(new Icons.Filled.Size20.BookmarkMultiple())" IconColor="Color.Accent">Your Bookings</FluentNavLink>
+        
+        <FluentNavLink Href="/Messages" Match="NavLinkMatch.All" Icon="@(new Icons.Filled.Size20.Chat())" IconColor="Color.Accent">Messages</FluentNavLink>
+        
+        <FluentNavLink Href="/Support" Match="NavLinkMatch.All" Icon="@(new Icons.Filled.Size20.PersonSupport())" IconColor="Color.Accent">Support</FluentNavLink>
+        
+        <FluentNavLink Href="/Settings" Match="NavLinkMatch.All" Icon="@(new Icons.Filled.Size20.ArchiveSettings())" IconColor="Color.Accent">Settings</FluentNavLink>
 
         <AuthorizeView>
             <Authorized>
-                <FluentNavLink Href="Account/Manage">@context.User.Identity?.Name</FluentNavLink>
+                <FluentNavLink Href="Account/Manage" Icon="@(new Icons.Filled.Size20.ArrowExit())" IconColor="Color.Accent">@context.User.Identity?.Name</FluentNavLink>
                 <form action="Account/Logout" method="post">
-                    <AntiforgeryToken />
-                    <input type="hidden" name="ReturnUrl" value="@currentUrl" />
+                    <AntiforgeryToken/>
+                    <input type="hidden" name="ReturnUrl" value="@currentUrl"/>
                     <FluentButton Type="ButtonType.Submit" Style="width: 100%;">Logout</FluentButton>
                 </form>
             </Authorized>
             <NotAuthorized>
-                    <FluentNavLink Href="/">Register</FluentNavLink>
-                    <FluentNavLink Href="Account/Login">Login</FluentNavLink>
+                <FluentNavLink Href="Account/Register" Icon="@(new Icons.Filled.Size20.PersonAdd())" IconColor="Color.Accent">Register</FluentNavLink>
+                <FluentNavLink Href="Account/Login" Icon="@(new Icons.Filled.Size20.ArrowEnter())" IconColor="Color.Accent">Login</FluentNavLink>
             </NotAuthorized>
-                <!-- Side Bar Menu -->
         </AuthorizeView>
-            <FluentNavLink Href="/spaces/create" Match="NavLinkMatch.All" Icon="@(new Icons.Regular.Size24.AddCircle())" IconColor="Color.Accent">Create Listing</FluentNavLink>
-
-            <FluentNavLink Href="/Support" Match="NavLinkMatch.All" Icon="@(new Icons.Regular.Size24.PersonPhone())" IconColor="Color.Accent">Support</FluentNavLink>
-
-            <FluentNavLink Href="/Messages" Match="NavLinkMatch.All" Icon="@(new Icons.Regular.Size24.Chat())" IconColor="Color.Accent">Messages</FluentNavLink>
-
-
-            <FluentNavLink Href="/Explore" Match="NavLinkMatch.All" Icon="@(new Icons.Regular.Size24.VehicleCar())" IconColor="Color.Accent">Explore</FluentNavLink>
-
-            <FluentNavLink Href="/Book" Match="NavLinkMatch.All" Icon="@(new Icons.Regular.Size24.BookmarkMultiple())" IconColor="Color.Accent">Your Bookings</FluentNavLink>
-
-            <FluentNavLink Href="/Testimonials" Match="NavLinkMatch.All" Icon="@(new Icons.Regular.Size20.ChatMultipleHeart())" IconColor="Color.Accent">Testimonials</FluentNavLink>
-
-
-            <!--<FluentNavLink Href="/Profile" Match="NavLinkMatch.All" Icon="@(new Icons.Regular.Size20.PersonAvailable())" IconColor="Color.Accent">User Bio</FluentNavLink>-->
-
-            <FluentNavLink Href="/Settings" Match="NavLinkMatch.All" Icon="@(new Icons.Regular.Size24.ArchiveSettings())" IconColor="Color.Accent">Settings</FluentNavLink>
-        </FluentNavMenu>
+    </FluentNavMenu>
 </nav>
 
 @code {

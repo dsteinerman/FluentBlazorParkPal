@@ -1,8 +1,8 @@
-﻿using System;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using CSharpVitamins;
 
-namespace FluentBlazorAuthTest.Data.Models
+namespace FluentBlazorAuthTest.Data
 {
     /// <summary>
     /// Represents a booking or rental transaction for a space.
@@ -13,52 +13,34 @@ namespace FluentBlazorAuthTest.Data.Models
         /// Unique identifier for the booking.
         /// </summary>
         [Key]
-        public Guid BookingId { get; set; }
+        public string Id { get; set; }
+        [ForeignKey(nameof(Space))]
+        public string? SpaceId { get; set; }
+        public virtual Space Space { get; set; }
 
-        /// <summary>
-        /// Foreign key for the space being booked.
-        /// </summary>
-        [ForeignKey("NewSpace")]
-        public string SpaceId { get; set; }
-
-        /// <summary>
-        /// Navigation property for the space being booked.
-        /// </summary>
-        public Space Space { get; set; }
-
-        /// <summary>
-        /// Foreign key for the client user who is making the booking.
-        /// </summary>
-        [ForeignKey("ClientUser")]
-        public string ClientId { get; set; }
-
-        /// <summary>
-        /// Navigation property for the client user.
-        /// </summary>
-        public ApplicationUser? ClientUser { get; set; }
-
-        /// <summary>
-        /// Start date and time of the booking.
-        /// </summary>
-        [DataType(DataType.DateTime)]
-        public DateTime StartDate { get; set; }
-
-        /// <summary>
-        /// End date and time of the booking.
-        /// </summary>
-        [DataType(DataType.DateTime)]
-        public DateTime EndDate { get; set; }
+        [ForeignKey(nameof(ClientUser))]
+        public string? ClientUserId { get; set; }
+        public virtual ApplicationUser ClientUser { get; set; }
 
         /// <summary>
         /// Total price for the booking.
         /// </summary>
         [DataType(DataType.Currency)]
+        [RegularExpression(@"[0-9]{1,3}(,[0-9]{3})*(\.[0-9]{2})?",
+            ErrorMessage = "Price must be in [##.##] format.")]
+        [Range(0, double.MaxValue, ErrorMessage = "Price must be a positive value")]
+        [Column(TypeName = "decimal(8, 2)")]
         public decimal Price { get; set; }
+
+        /// <summary>
+        /// Identifier for a Booking's current activity.
+        /// </summary>
+        public bool IsActive { get; set; }
 
         /// <summary>
         /// Current status of the booking (e.g., Pending, Confirmed, Cancelled).
         /// </summary>
-        public BookingStatus Status { get; set; }
+        public BookingStatus BookingStatus { get; set; }
 
         /// <summary>
         /// Status of the payment for the booking (e.g., Paid, Partially Paid, Unpaid).
@@ -78,6 +60,18 @@ namespace FluentBlazorAuthTest.Data.Models
         public DateTime UpdatedAt { get; set; }
 
         /// <summary>
+        /// Start date and time of the booking.
+        /// </summary>
+        [DataType(DataType.DateTime)]
+        public DateTime StartDateTime { get; set; }
+
+        /// <summary>
+        /// End date and time of the booking.
+        /// </summary>
+        [DataType(DataType.DateTime)]
+        public DateTime EndDateTime { get; set; } 
+
+        /// <summary>
         /// Any notes or special requests made by the customer.
         /// </summary>
         public string? CustomerNotes { get; set; }
@@ -86,6 +80,13 @@ namespace FluentBlazorAuthTest.Data.Models
         /// Internal notes or comments added by administrators or staff.
         /// </summary>
         public string? AdminNotes { get; set; }
+
+        public Booking()
+        {
+            Id = ShortGuid.NewGuid();
+            CreatedAt = DateTime.UtcNow;
+            UpdatedAt = DateTime.UtcNow;
+        }
     }
 
     /// <summary>
@@ -93,9 +94,10 @@ namespace FluentBlazorAuthTest.Data.Models
     /// </summary>
     public enum BookingStatus
     {
-        Pending,
-        Confirmed,
-        Cancelled
+        Pending = 1,    // Active
+        Confirmed = 2,  // Active
+        Cancelled = 3,  // Inactive
+        Completed = 4   // Inactive
         // Add additional statuses as needed
     }
 
@@ -104,9 +106,9 @@ namespace FluentBlazorAuthTest.Data.Models
     /// </summary>
     public enum PaymentStatus
     {
-        Paid,
-        PartiallyPaid,
-        Unpaid
+        Paid = 1,
+        PartiallyPaid = 2,
+        Unpaid = 3
         // Add additional payment statuses as needed
     }
 }

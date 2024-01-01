@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace FluentBlazorAuthTest.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20231211060123_AddNamesForUser")]
-    partial class AddNamesForUser
+    [Migration("20231229035029_Trial00")]
+    partial class Trial00
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -96,6 +96,102 @@ namespace FluentBlazorAuthTest.Migrations
                         .HasFilter("[NormalizedUserName] IS NOT NULL");
 
                     b.ToTable("AspNetUsers", (string)null);
+                });
+
+            modelBuilder.Entity("FluentBlazorAuthTest.Data.Booking", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("AdminNotes")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("BookingStatus")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ClientUserId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CustomerNotes")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("EndDateTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("PaymentStatus")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("Price")
+                        .HasColumnType("decimal(8, 2)");
+
+                    b.Property<string>("SpaceId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTime>("StartDateTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ClientUserId");
+
+                    b.HasIndex("SpaceId");
+
+                    b.ToTable("Bookings");
+                });
+
+            modelBuilder.Entity("FluentBlazorAuthTest.Data.Space", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("Address")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("DateCreated")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(4000)
+                        .HasColumnType("nvarchar(4000)");
+
+                    b.Property<string>("HostId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<bool>("IsPublic")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsVacant")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("LatestTransaction")
+                        .HasColumnType("datetime2");
+
+                    b.Property<decimal?>("Latitude")
+                        .HasColumnType("decimal(10, 6)");
+
+                    b.Property<decimal?>("Longitude")
+                        .HasColumnType("decimal(10, 6)");
+
+                    b.Property<decimal?>("Price")
+                        .HasColumnType("decimal(8, 2)");
+
+                    b.Property<int>("Size")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("HostId");
+
+                    b.ToTable("Spaces");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -231,6 +327,31 @@ namespace FluentBlazorAuthTest.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("FluentBlazorAuthTest.Data.Booking", b =>
+                {
+                    b.HasOne("FluentBlazorAuthTest.Data.ApplicationUser", "ClientUser")
+                        .WithMany("Bookings")
+                        .HasForeignKey("ClientUserId");
+
+                    b.HasOne("FluentBlazorAuthTest.Data.Space", "Space")
+                        .WithMany("Bookings")
+                        .HasForeignKey("SpaceId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("ClientUser");
+
+                    b.Navigation("Space");
+                });
+
+            modelBuilder.Entity("FluentBlazorAuthTest.Data.Space", b =>
+                {
+                    b.HasOne("FluentBlazorAuthTest.Data.ApplicationUser", "HostUser")
+                        .WithMany("HostedSpaces")
+                        .HasForeignKey("HostId");
+
+                    b.Navigation("HostUser");
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
@@ -280,6 +401,18 @@ namespace FluentBlazorAuthTest.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("FluentBlazorAuthTest.Data.ApplicationUser", b =>
+                {
+                    b.Navigation("Bookings");
+
+                    b.Navigation("HostedSpaces");
+                });
+
+            modelBuilder.Entity("FluentBlazorAuthTest.Data.Space", b =>
+                {
+                    b.Navigation("Bookings");
                 });
 #pragma warning restore 612, 618
         }

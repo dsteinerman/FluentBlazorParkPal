@@ -1,0 +1,66 @@
+﻿@page "/spaces/search"
+
+@using FluentBlazorAuthTest.Data
+@using FluentBlazorAuthTest.Services
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.EntityFrameworkCore
+@using Microsoft.IdentityModel.Tokens
+
+
+@inject ApplicationDbContext DbContext
+@inject NavigationManager NavigationManager
+@inject GeocodingService GeocodingService
+
+
+@attribute [Authorize]
+
+@rendermode InteractiveServer
+
+<h1>Search for a Space</h1>
+<FluentDivider Role="DividerRole.Separator"></FluentDivider>
+<FluentSpacer Width="25"></FluentSpacer>
+
+@if (!spaces.IsNullOrEmpty())
+{
+    foreach (var space in spaces)
+    {
+        <FluentSpacer Width="25"></FluentSpacer>
+        <FluentCard Width="80%">
+            <p>Location: @space.Address</p>
+            <p>Size: @space.Size.ToString()</p>
+            <p>Price: $@space.Price</p>
+            <p>Description: @space.Description</p>
+        </FluentCard>
+        <FluentSpacer Width="25"></FluentSpacer>
+    }
+} else {
+    <p><em>There are no spaces to display.</em></p>
+}
+
+
+@code {
+    private IEnumerable<Space> spaces;
+    private int totalSpaces;
+    private int currentPage = 1;
+    private const int PageSize = 10;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadSpaces(currentPage, PageSize);
+    }
+
+    private async Task LoadSpaces(int pageNumber, int pageSize)
+    {
+        var query = DbContext.Spaces
+            .Where(s => s.IsPublic)
+            .OrderByDescending(s => s.DateCreated);
+
+        totalSpaces = await query.CountAsync();
+
+        spaces = await query.Skip((pageNumber - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+
+    }
+
+}
