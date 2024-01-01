@@ -1,5 +1,4 @@
-﻿
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 
 namespace FluentBlazorAuthTest.Data.Services
 {
@@ -58,6 +57,27 @@ namespace FluentBlazorAuthTest.Data.Services
 
                 await _context.SaveChangesAsync();
             }
+        }
+
+        async Task<IEnumerable<Space>> ISpaceService.GetSpacesByHostIdAsync(string hostId)
+        {
+            return await _context.Spaces
+                        .Where(s => s.HostId == hostId)
+                        .ToListAsync();
+        }
+
+        public async Task<decimal> GetSpacePriceByIdAsync(string spaceId)
+        {
+            var space = await _context.Spaces
+                                      .AsNoTracking()
+                                      .FirstOrDefaultAsync(s => s.Id == spaceId);
+
+            if (space == null)
+            {
+                throw new KeyNotFoundException("Space not found with id: " + spaceId);
+            }
+
+            return (decimal)space.Price;
         }
     }
 }

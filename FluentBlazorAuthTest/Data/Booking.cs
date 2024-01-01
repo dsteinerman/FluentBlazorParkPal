@@ -92,7 +92,9 @@ namespace FluentBlazorAuthTest.Data
         Pending = 1, // Active
         Confirmed = 2, // Active
         Cancelled = 3, // Inactive
-        Completed = 4 // Inactive
+        Completed = 4, // Inactive
+        Rejected = 5,
+        Available = 6
         // Add additional statuses as needed
     }
 

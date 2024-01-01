@@ -2,8 +2,11 @@
 @page "/edit-space/{Id}"
 @using FluentBlazorAuthTest.Data
 @using FluentBlazorAuthTest.Data.Services
+@using System.Security.Claims
 @inject ISpaceService SpaceService
 @inject NavigationManager NavigationManager
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
 
 @rendermode InteractiveServer
 
@@ -51,6 +54,7 @@ else
             <InputRadio Value="false" /> No
         </InputRadioGroup>
     </div>
+
     <FluentButton Type="ButtonType.Submit" Appearance="Appearance.Accent">Save</FluentButton>
 
 </EditForm>
@@ -61,6 +65,28 @@ else
     public string? Id { get; set; }
 
     public Space CurrentSpace { get; set; } = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        if (!user.Identity.IsAuthenticated)
+        {
+            // Handle unauthenticated scenario
+            NavigationManager.NavigateTo("/login");
+        }
+        else if (Id is null)
+        {
+            CurrentSpace.HostId = user.FindFirst(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+        }
+        else
+        {
+            var space = await SpaceService.GetSpaceByIdAsync((string)Id);
+            if (space is not null)
+                CurrentSpace = space;
+        }
+    }
 
     protected override async Task OnParametersSetAsync()
     {

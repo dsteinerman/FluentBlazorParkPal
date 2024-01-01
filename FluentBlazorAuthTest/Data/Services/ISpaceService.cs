@@ -23,4 +23,8 @@ public interface ISpaceService
 
     Task AddSpaceAsync(Space space);
 
+    Task<IEnumerable<Space>> GetSpacesByHostIdAsync(string hostId);
+
+    Task<decimal> GetSpacePriceByIdAsync(string spaceId);
+
 }

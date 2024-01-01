@@ -8,7 +8,7 @@ public static class DatabaseSeeder
 {
     public static void SeedSpaces(ApplicationDbContext context, int count = 25)
     {
-        if (!context.Spaces.Any())
+      //  if (!context.Spaces.Any())
         {
             var spaceFaker = new Faker<Space>()
                 .RuleFor(s => s.Id, f => ShortGuid.NewGuid().ToString()) // Short GUID
@@ -24,8 +24,8 @@ public static class DatabaseSeeder
                 .RuleFor(s => s.Bookings, new HashSet<Booking>()); // Empty bookings
 
             var spaces = spaceFaker.Generate(count);
-            context.Spaces.AddRange(spaces);
-            context.SaveChanges();
+          //  context.Spaces.AddRange(spaces);
+         //   context.SaveChanges();
         }
     }
 }

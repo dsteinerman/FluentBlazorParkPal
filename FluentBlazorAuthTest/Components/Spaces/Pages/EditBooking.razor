@@ -1,0 +1,133 @@
+﻿@page "/edit-booking"
+@page "/edit-booking/{Id}"
+
+@using FluentBlazorAuthTest.Data
+@using FluentBlazorAuthTest.Data.Services
+@using Microsoft.AspNetCore.Identity;
+@using System.Security.Claims
+
+
+@inject IBookingService BookingService
+@inject NavigationManager NavigationManager
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+@rendermode InteractiveServer
+
+
+@if(Id is null)
+{
+    <PageTitle>New Booking</PageTitle>
+    <h3>New Booking</h3>
+    
+
+
+}
+else
+{
+    <PageTitle>Edit Booking</PageTitle>
+    <h3>Confirm Booking for "@CurrentBooking.Id"</h3>
+}
+
+
+
+
+<EditForm Model="CurrentBooking" OnSubmit="HandleSubmit">
+
+    <div>
+        @if (Id is not null)
+        {
+            <div>
+                <label>Booking ID:</label>
+                <p>@CurrentBooking.Id</p>
+            </div>
+
+            <div>
+                <label>Space ID:</label>
+                <p>@CurrentBooking.SpaceId</p>
+            </div>
+
+            <div>
+                <label>Created At:</label>
+                <p>@CurrentBooking.CreatedAt.ToString("g")</p>
+            </div>
+
+            <div>
+                <label>Updated At:</label>
+                <p>@CurrentBooking.UpdatedAt.ToString("g")</p>
+            </div>
+
+            <div>
+                <label>Client User ID:</label>
+                <p>@CurrentBooking.ClientUserId</p>
+            </div>
+                    
+        }
+
+    </div>
+        
+
+    <FluentButton Type="ButtonType.Submit" Appearance="Appearance.Accent">Save</FluentButton>
+
+</EditForm>
+
+
+
+@code {
+    [Parameter]
+    public string? Id { get; set; }
+
+    public Booking CurrentBooking { get; set; } = new();
+    private bool IsExistingBooking { get; set; } = false;
+
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (Id is not null)
+        {
+            // Use the Id from the URL as the SpaceId
+            CurrentBooking.SpaceId = Id;
+
+            var booking = await BookingService.GetBookingByIdAsync((string)Id);
+            if (booking != null)
+            {
+                CurrentBooking = booking;
+                IsExistingBooking = true;
+            }
+        }
+        CurrentBooking.ClientUserId = await GetCurrentUserIdAsync();
+    }
+
+    private async Task<string> GetCurrentUserIdAsync()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+        return user.Identity.IsAuthenticated ? user.FindFirst(ClaimTypes.NameIdentifier)?.Value : null;
+    }
+
+
+    async Task HandleSubmit()
+    {
+        if (IsExistingBooking)
+        {
+            // Update existing booking
+            //await BookingService.UpdateBookingPriceBasedOnSpace(CurrentBooking.Id);
+
+            CurrentBooking.BookingStatus = BookingStatus.Pending;
+            await BookingService.UpdateBookingAsync(CurrentBooking, (string)Id);
+        }
+        else
+        {
+            // Create a new booking
+            CurrentBooking.BookingStatus = BookingStatus.Pending;
+            await BookingService.AddBookingAsync(CurrentBooking);
+            await BookingService.UpdateBookingPriceBasedOnSpace(CurrentBooking.Id);
+            await BookingService.UpdatePaymentStatusUnpaidByIdAsync(CurrentBooking.Id, CurrentBooking.BookingStatus);
+
+        }
+
+        // Redirect after handling
+        NavigationManager.NavigateTo("/Book/");
+    }
+
+}
