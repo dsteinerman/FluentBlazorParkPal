@@ -1,13 +1,10 @@
 ﻿@page "/Messages"
 @using System
 @using System.Collections.Generic
-@using Microsoft.AspNetCore.Authorization
 
 <PageTitle>Messages</PageTitle>
 
 <h3>Message Center</h3>
-
-<link rel="stylesheet" href="/HTML/CSS/Styles.css" />
 
 <div class="chat-container">
     <div class="chat-messages">
@@ -24,16 +21,12 @@
 </div>
 
 @code {
-
-    // List of messages
-
     private List<Message> messages = new List<Message>
     {
         new Message { Text = "Hey", Sender = "received", Timestamp = DateTime.Now.ToShortTimeString() }
     };
     private string currentMessage;
 
-    // Sends a message
     private void SendMessage()
     {
         if (!string.IsNullOrWhiteSpace(currentMessage))
@@ -48,8 +41,6 @@
             currentMessage = string.Empty;
         }
     }
-
-    // Sends a message when Enter key is pressed
 
     private async Task SendMessageOnEnter(KeyboardEventArgs args)
     {
@@ -67,4 +58,58 @@
     }
 }
 
+<style>
+    /* Style the chat container */
+    .chat-container {
+        max-width: 600px;
+        margin: 20px auto;
+    }
 
+    /* Style the chat messages */
+    .chat-messages {
+        height: 200px;
+        overflow-y: scroll;
+        border: 1px solid #ccc;
+        padding: 10px;
+        margin-bottom: 10px;
+    }
+
+    /* Style the message bubbles */
+    .message {
+        background-color: #f1f0f0;
+        padding: 10px;
+        margin-bottom: 5px;
+        border-radius: 8px;
+        word-wrap: break-word;
+    }
+
+    /* Align sent messages to the right */
+    .sent {
+        text-align: right;
+        background-color: #DCF8C6;
+    }
+
+    /* Style message info */
+    .message-info {
+        font-size: 0.8em;
+        color: #888;
+    }
+
+    /* Style the input and button */
+    input[type="text"] {
+        width: calc(100% - 70px);
+        padding: 8px;
+        border-radius: 5px;
+        border: 1px solid #ccc;
+        margin-bottom: 10px;
+    }
+
+    button {
+        padding: 8px 16px;
+        border: none;
+        border-radius: 5px;
+        background-color: #007bff;
+        color: white;
+        cursor: pointer;
+    }
+</style>

@@ -11,7 +11,7 @@
 
     private string apiKey = "AIzaSyC9xeR-FS8PtMpGf9sTiy3NrysMX9rcoSI";
     
-    private string? searchQuery = "New York City";
+    private string searchQuery = "New York City";
     
     private string mode = "place"; // The Google Maps Embed API supports many different modes. For now, we will use "place" for searches.
     
@@ -23,7 +23,7 @@
     public async Task UpdateMapAsync(string newSearchQuery)
     {
         Console.WriteLine($"Updating map with query: {newSearchQuery}");
-        searchQuery = String.IsNullOrEmpty(newSearchQuery) ? searchQuery : newSearchQuery;
+        searchQuery = newSearchQuery;
         await OnSearchQueryChanged.InvokeAsync(newSearchQuery);
         StateHasChanged();
     }

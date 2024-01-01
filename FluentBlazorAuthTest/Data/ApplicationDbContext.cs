@@ -1,6 +1,6 @@
-﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Identity;
 
 namespace FluentBlazorAuthTest.Data
 {
@@ -42,29 +42,43 @@ namespace FluentBlazorAuthTest.Data
                .WithOne(b => b.ClientUser)
                .HasForeignKey(b => b.ClientUserId)
                .IsRequired(false); // A user can have many bookings, but it's not required
+
+            // Other model configurations can be added here
+
+
+            // Model configuration for Space
+            modelBuilder.Entity<Space>(entity =>
+            {
+                // Setting precision for Latitude
+                entity.Property(e => e.Latitude).HasPrecision(9, 6);
+
+                // Setting precision for Longitude
+                entity.Property(e => e.Longitude).HasPrecision(9, 6);
+
                 // Additional configurations for Space can be added here
+            });
+
+            modelBuilder.Entity<IdentityRole>().HasData(new IdentityRole
+            {
+                Name = "User",
+                NormalizedName = "USER",
+                Id = Guid.NewGuid().ToString(),
+                ConcurrencyStamp = Guid.NewGuid().ToString(),
+
+            });
+            modelBuilder.Entity<IdentityRole>().HasData(new IdentityRole
+            {
+                Name = "Admin",
+                NormalizedName = "ADMIN",
+                Id = Guid.NewGuid().ToString(),
+                ConcurrencyStamp = Guid.NewGuid().ToString(),
+
+            });
+
+
+
+            // Other model configurations can be added here
         }
-
-        //modelBuilder.Entity<IdentityRole>().HasData(new IdentityRole
-        //{
-        //    Name = "User",
-        //    NormalizedName = "USER",
-        //    Id = Guid.NewGuid().ToString(),
-        //    ConcurrencyStamp = Guid.NewGuid().ToString(),
-
-        //});
-        //modelBuilder.Entity<IdentityRole>().HasData(new IdentityRole
-        //{
-        //    Name = "Admin",
-        //    NormalizedName = "ADMIN",
-        //    Id = Guid.NewGuid().ToString(),
-        //    ConcurrencyStamp = Guid.NewGuid().ToString(),
-
-        //});
-
-
-
-        // Other model configurations can be added here
     }
 
 }

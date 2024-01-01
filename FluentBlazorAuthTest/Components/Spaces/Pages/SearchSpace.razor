@@ -1,66 +1,153 @@
 ﻿@page "/spaces/search"
 
+@rendermode InteractiveServer
+
 @using FluentBlazorAuthTest.Data
-@using FluentBlazorAuthTest.Services
+@using FluentBlazorAuthTest.Data.Services
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.EntityFrameworkCore
-@using Microsoft.IdentityModel.Tokens
-
+@using System.Security.Claims
 
 @inject ApplicationDbContext DbContext
 @inject NavigationManager NavigationManager
-@inject GeocodingService GeocodingService
+@inject ISpaceService SpaceService
+@inject AuthenticationStateProvider AuthenticationStateProvider
 
 
 @attribute [Authorize]
 
-@rendermode InteractiveServer
+<PageTitle>Search for a Space</PageTitle>
 
 <h1>Search for a Space</h1>
-<FluentDivider Role="DividerRole.Separator"></FluentDivider>
-<FluentSpacer Width="25"></FluentSpacer>
+<FluentButton Appearance="Appearance.Outline" @onclick="AddSpace">Add a new Space</FluentButton>
 
-@if (!spaces.IsNullOrEmpty())
+
+
+@if (spaces != null)
 {
+    var currentUserId = user.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+
     foreach (var space in spaces)
     {
-        <FluentSpacer Width="25"></FluentSpacer>
-        <FluentCard Width="80%">
-            <p>Location: @space.Address</p>
-            <p>Size: @space.Size.ToString()</p>
-            <p>Price: $@space.Price</p>
-            <p>Description: @space.Description</p>
-        </FluentCard>
-        <FluentSpacer Width="25"></FluentSpacer>
+        if (bookingStatuses[space.Id] == BookingStatus.Available && space.IsPublic || (user != null && user.IsInRole("Admin")))
+        {
+            <FluentCard>
+                <p>Size: @space.Size.ToString()</p>
+                <p>Price: $@space.Price</p>
+                <p>Description: @space.Description</p>
+                @if (space.Bookings != null)
+                {
+                    <p>Status: @bookingStatuses[space.Id].ToString()</p>
+
+                }
+                @if (space.HostId != currentUserId || (user != null && user.IsInRole("Admin")))
+                {
+                    <FluentButton Appearance="Appearance.Accent" @onclick="@(() => BookSpace(space.Id))">Book</FluentButton>
+                }
+
+                @if (user != null && user.IsInRole("Admin"))
+                {
+                    <FluentButton Appearance="Appearance.Lightweight" Color="Red" @onclick="@(() => DeleteSpace(space.Id))">Delete</FluentButton>
+                    <FluentButton Appearance="Appearance.Accent" @onclick="@(() => EditSpace(space.Id))">Edit</FluentButton>
+
+                }
+
+            </FluentCard>
+            
+        }
+        
     }
-} else {
-    <p><em>There are no spaces to display.</em></p>
+
 }
+@if (spaces == null)
+{
+    <p><em>Loading Spaces...</em></p>
+}
+
 
 
 @code {
     private IEnumerable<Space> spaces;
+    private IEnumerable<Booking> bookings;
+
     private int totalSpaces;
     private int currentPage = 1;
-    private const int PageSize = 10;
+    private const int pageSize = 5;
+    // private bool isAdmin = false;
+
+    private ClaimsPrincipal user; // Property to store the authenticated user
+
+    private Dictionary<string, BookingStatus> bookingStatuses;
+
 
     protected override async Task OnInitializedAsync()
     {
-        await LoadSpaces(currentPage, PageSize);
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        user = authState.User;
+
+        await Task.Delay(500);
+        spaces = await SpaceService.GetAllSpacesAsync();
+        bookingStatuses = new Dictionary<string, BookingStatus>();
+        foreach (var space in spaces)
+        {
+            var status = GetBookingStatusForSpace(space.Id);
+            bookingStatuses.Add(space.Id, status);
+        }
+
     }
 
-    private async Task LoadSpaces(int pageNumber, int pageSize)
+    private BookingStatus GetBookingStatusForSpace(string spaceId)
+    {
+        var booking = DbContext.Bookings.FirstOrDefault(b => b.SpaceId == spaceId);
+
+        if (booking != null)
+        {
+            return booking.BookingStatus;
+        }
+        else
+        {
+            return BookingStatus.Available; 
+        }
+    }
+
+
+    public async Task<(IEnumerable<Space>, int)> GetPublicSpacesAsync(int pageNumber, int pageSize)
     {
         var query = DbContext.Spaces
             .Where(s => s.IsPublic)
-            .OrderByDescending(s => s.DateCreated);
+            .OrderBy(s => s.DateCreated); // or any other ordering
 
-        totalSpaces = await query.CountAsync();
+        var totalSpaces = await query.CountAsync();
 
-        spaces = await query.Skip((pageNumber - 1) * pageSize)
+        var spaces = await query.Skip((pageNumber - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync();
 
+        return (spaces, totalSpaces);
     }
+
+    private async Task LoadSpaces()
+    {
+        (spaces, totalSpaces) = await GetPublicSpacesAsync(currentPage, pageSize);
+    }
+
+    void EditSpace(string Id)
+    {
+        NavigationManager.NavigateTo($"/edit-space/{Id}");
+    }
+    void BookSpace(string Id)
+    {
+        NavigationManager.NavigateTo($"/edit-booking/{Id}");
+    }
+    async Task DeleteSpace(string Id)
+    {
+        await SpaceService.DeleteSpaceAsync(Id);
+        spaces = await SpaceService.GetAllSpacesAsync();
+    }
+    void AddSpace()
+    {
+        NavigationManager.NavigateTo("/edit-space/");
+    }
+
 
 }

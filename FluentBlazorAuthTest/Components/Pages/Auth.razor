@@ -14,12 +14,11 @@
 
 <h1>You are authenticated</h1>
 
-<!-- Conditional rendering based on user authorization status -->
-
 <AuthorizeView>
     @if (currentUser != null)
     {
         <p>Hello @currentUser.FirstName @currentUser.LastName!</p>
+
         <p>Your current username & email is @context.User.Identity?.Name</p>
     } else
     {
@@ -28,20 +27,16 @@
 
 </AuthorizeView>
 
-@code {
+@code{
     private ApplicationUser currentUser;
 
-    //  executed during component initialization
     protected override async Task OnInitializedAsync()
     {
-        // Retrieving authentication state
         var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
         var user = authState.User;
 
-        // Checking if user is authenticated
         if (user.Identity.IsAuthenticated)
         {
-            // Retrieving user details if authenticated
             var userId = UserManager.GetUserId(user);
             currentUser = await UserManager.FindByIdAsync(userId);
         }

@@ -1,7 +1,7 @@
 ﻿using FluentBlazorAuthTest.Components;
 using FluentBlazorAuthTest.Components.Account;
 using FluentBlazorAuthTest.Data;
-using FluentBlazorAuthTest.Services;
+using FluentBlazorAuthTest.Data.Services;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -19,8 +19,9 @@ builder.Services.AddCascadingAuthenticationState();
 builder.Services.AddScoped<IdentityUserAccessor>();
 builder.Services.AddScoped<IdentityRedirectManager>();
 builder.Services.AddScoped<AuthenticationStateProvider, IdentityRevalidatingAuthenticationStateProvider>();
+builder.Services.AddScoped<ISpaceService, SpaceService>();
+builder.Services.AddScoped<IBookingService, BookingService>();
 
-builder.Services.AddScoped<GeocodingService>();
 
 builder.Services.AddAuthentication(options =>
     {
@@ -30,10 +31,6 @@ builder.Services.AddAuthentication(options =>
     .AddIdentityCookies();
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
-
-builder.Services.AddDbContextFactory<ApplicationDbContext>(options =>
-    options.UseSqlServer(connectionString));
-
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(connectionString));
 
@@ -46,11 +43,7 @@ builder.Services.AddIdentityCore<ApplicationUser>(options => options.SignIn.Requ
     .AddSignInManager()
     .AddDefaultTokenProviders();
 
-
-
 builder.Services.AddSingleton<IEmailSender<ApplicationUser>, IdentityNoOpEmailSender>();
-
-builder.Services.AddHttpClient();
 
 var app = builder.Build();
 
@@ -85,12 +78,8 @@ app.MapRazorComponents<App>()
 // Add additional endpoints required by the Identity /Account Razor components.
 app.MapAdditionalIdentityEndpoints();
 
-//InitializeRoles(app.Services).Wait();
-
-
 app.Run();
 
-// Role Initialization Method
 async Task InitializeRoles(IServiceProvider services)
 {
     using var scope = services.CreateScope();

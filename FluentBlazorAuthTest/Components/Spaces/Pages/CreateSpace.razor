@@ -6,14 +6,12 @@
 @using FluentBlazorAuthTest.Data
 @using System.Diagnostics
 @using System.ComponentModel.DataAnnotations
-@using FluentBlazorAuthTest.Services
-@using Microsoft.EntityFrameworkCore
+@using System.Runtime.InteropServices
 
 @inject NavigationManager NavigationManager
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject UserManager<ApplicationUser> UserManager
-@inject GeocodingService GeocodingService
-@inject IDbContextFactory<ApplicationDbContext> DbContextFactory
+@inject FluentBlazorAuthTest.Data.ApplicationDbContext DB
 
 @attribute [Authorize]
 
@@ -25,119 +23,107 @@
 <h3><em>Fill in your space's details below</em></h3>
 
 <hr />
-
-<FluentGrid
-    Justify="JustifyContent.FlexStart">
-    <FluentGridItem>
-        <FluentStack Orientation="Orientation.Vertical">
+<div class="row">
+    <div class="col-md-4">
+        <FluentCard AreaRestricted="false">
+            <MapSearch @ref="mapComponent" />
+            <input type="text" @bind="searchQuery" />
+            <button @onclick="SubmitQuery">Search</button>
+            @* Embed Google Map *@
+        </FluentCard>
+        <br />
+        <EditForm method="post" Model="NewSpace" OnValidSubmit="AddSpace" FormName="create" Enhance>
+            <DataAnnotationsValidator/>
+            <ValidationSummary class="text-danger"/>
             <FluentCard AreaRestricted="false">
-                <FluentStack Orientation="Orientation.Horizontal">
-                    @* Embed Google Map *@
-                    <MapSearch @ref="_mapComponent"/>
-                    <input type="text" @bind="_searchQuery" required="true"/>
-                    <FluentButton IconEnd="@(new Icons.Regular.Size16.Globe())"
-                                  Appearance="Appearance.Accent"
-                                  OnClick="@SubmitQuery">
-                        Search
-                    </FluentButton>
-                </FluentStack>
+                <h4>Listed Price:</h4>
+                <FluentNumberField id="price" @bind-Value="NewSpace.Price" class="form-control"/>
+                <ValidationMessage For="() => NewSpace.Price" class="text-danger"/>
             </FluentCard>
-            <EditForm method="post" Model="NewSpace" OnValidSubmit="AddSpace" FormName="create" Enhance>
-                <DataAnnotationsValidator/>
-                <ValidationSummary class="text-danger"/>
-                <FluentCard AreaRestricted="false">
-                    <h4>Listed Price:</h4>
-                    <FluentNumberField id="price" @bind-Value="NewSpace.Price" class="form-control"/>
-                    <ValidationMessage For="() => NewSpace.Price" class="text-danger"/>
-                </FluentCard>
-                <br/>
-                @* Size Dropdown *@
-                <FluentCard AreaRestricted="false">
-                    <h4>Size:</h4>
-                    <InputSelect @bind-Value="_selectedSize">
-                        @foreach (var size in SizeOptions)
-                        {
-                            <option value="@size">@size</option>
-                        }
-                    </InputSelect>
-                    <ValidationMessage For="() => NewSpace.Size" class="text-danger"/>
-                </FluentCard>
-                <br/>
-                @* Description TextArea *@
-                <FluentCard AreaRestricted="false">
-                    <h4>Description</h4>
-                    <FluentTextArea Appearance="FluentInputAppearance.Filled" id="description" @bind-Value="NewSpace.Description" Placeholder="Write a description..." Spellcheck="true"/>
-                    <ValidationMessage For="() => NewSpace.Description" class="text-danger"/>
-                </FluentCard>
-                <br/>
-                @* IsPublic CheckBox *@
-                <FluentCard>
-                    <FluentCheckbox bind-Value="@NewSpace.IsPublic"
-                                    id="ispublic"
-                                    bind-CheckState="@NewSpace.IsPublic"
-                                    Label="I want this Space to be public and available upon submission."/>
-                    <ValidationMessage For="() => NewSpace.IsPublic" class="text-danger"/>
-                </FluentCard>
-                <br/>
-                <FluentButton 
-                    Type="ButtonType.Submit" 
-                    Appearance="Appearance.Accent">Create Space</FluentButton>
-            </EditForm>
-        </FluentStack>
-    </FluentGridItem>
-</FluentGrid>
+            <br/>
+            @* Size Dropdown *@
+            <FluentCard AreaRestricted="false">
+                <h4>Size:</h4>
+                <InputSelect @bind-Value="_selectedSize">
+                    @foreach (var size in SizeOptions)
+                    {
+                        <option value="@size">@size</option>
+                    }
+                </InputSelect>
+                <ValidationMessage For="() => NewSpace.Size" class="text-danger"/>
+            </FluentCard>
+            <br/>
+            @* Description TextArea *@
+            <FluentCard AreaRestricted="false">
+                <h4>Description</h4>
+                <FluentTextArea Appearance="FluentInputAppearance.Filled" id="description" @bind-Value="NewSpace.Description" class="form-control" Placeholder="Write a description..." Spellcheck="true"/>
+                <ValidationMessage For="() => NewSpace.Description" class="text-danger"/>
+            </FluentCard>
+            <br/>
+            @* TODO: Handle Image Uploading *@
+
+            @* IsPublic CheckBox *@
+            <div class="mb-3">
+                <em> I want this Space to be public and available upon submission. </em>
+                <InputCheckbox id="ispublic" @bind-Value="NewSpace.IsPublic" class="form-check-input"/>
+                <ValidationMessage For="() => NewSpace.IsPublic" class="text-danger"/>
+            </div>
+            <br/>
+            <FluentButton Type="ButtonType.Submit" Appearance="Appearance.Accent">Create Space</FluentButton>
+        </EditForm>
+
+    </div>
+</div>
 
 @code {
+
     // Map Search Query Handler
-    private string _searchQuery;
-    private MapSearch _mapComponent;
+    private string searchQuery;
+    private MapSearch mapComponent;
+
+    private async Task SubmitQuery()
+    {
+        Console.WriteLine($"Submitting query: {searchQuery}");
+        await mapComponent.UpdateMapAsync(searchQuery);
+    }
+
+    private void HandleSearchQueryChange(string query)
+    {
+        // Additional logic for search-query changes goes here
+    }
 
     // Values Managing the size-enum dropdown menu
     private SpaceSize _selectedSize;
     private IEnumerable<SpaceSize> SizeOptions => Enum.GetValues(typeof(SpaceSize)).Cast<SpaceSize>();
 
+
     [SupplyParameterFromForm]
     public Space NewSpace { get; set; } = new();
     private ApplicationUser? _currentUser;
 
-    private async Task SubmitQuery()
-    {
-        Console.WriteLine($"Submitting query: {_searchQuery}");
-        await _mapComponent.UpdateMapAsync(_searchQuery);
-
-        // Call the GeocodingService to get coordinates and address
-        var (latitude, longitude, status, address) = await GeocodingService.GeocodeAddress(_searchQuery);
-
-        if (status == "OK")
-        {
-            NewSpace.Latitude = (decimal)latitude;
-            NewSpace.Longitude = (decimal)longitude;
-            NewSpace.Address = address; // Store the full address
-        }
-    }
-
     public Space ConfigureSpace(Space space)
     {
+        space.Id = Guid.NewGuid().ToString(); // Initialize with a new GUID as string
+        space.DateCreated = DateTime.UtcNow; // Set creation date to current date and time
         Debug.Assert(_currentUser != null, nameof(_currentUser) + " != null");
         space.HostId = _currentUser.Id;
-        space.Size = _selectedSize;
-        space.Latitude = NewSpace.Latitude;
-        space.Longitude = NewSpace.Longitude;
-        space.Address = NewSpace.Address; // Ensure the address is set
+        // Replace with coordinates obtained from Geocoding API
+        space.Latitude = 38.897957m;
+        space.Longitude = -77.036560m;
 
         return space;
     }
 
+    // To protect from overposting attacks, see https://aka.ms/RazorPagesCRUD
     public async Task AddSpace()
     {
-        await using var dbContext = await DbContextFactory.CreateDbContextAsync();
         ConfigureSpace(NewSpace);
-        Console.WriteLine($"Adding Space with Address: {NewSpace.Address}");
-        dbContext.Spaces.Add(NewSpace);
-        await dbContext.SaveChangesAsync();
+        DB.Spaces.Add(NewSpace);
+        await DB.SaveChangesAsync();
         NavigationManager.NavigateTo("/spaces");
     }
 
+    // Task that grabs the currently logged-in user's ID
     protected override async Task OnInitializedAsync()
     {
         var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
@@ -150,7 +136,6 @@
                 _currentUser = await UserManager.FindByIdAsync(userId);
         }
     }
-
 
     // This page's input model.
     // This handles validation for end-user form input among other things. (e.g., defining data types which can be adapted based on user locale.)
@@ -173,6 +158,6 @@
         public string Description { get; set; } = "";
 
         [Required]
-        public bool IsPublic { get; set; }
+        public bool IsPublic { get; set; } = true;
     }
 }

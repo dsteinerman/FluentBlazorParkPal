@@ -43,12 +43,6 @@ namespace FluentBlazorAuthTest.Data
         public decimal? Longitude { get; set; }
 
         /// <summary>
-        /// The full address of the Space.
-        /// Stored to mitigate calls to the Geocoding API
-        /// </summary>
-        public string? Address { get; set; }
-
-        /// <summary>
         /// The price set for the space. Consider implementing a pricing algorithm for standardization.
         /// </summary>
         [Column(TypeName = "decimal(8, 2)")]
@@ -67,14 +61,9 @@ namespace FluentBlazorAuthTest.Data
 
         /// <summary>
         /// Indicates whether the space is available for public booking.
+        /// The default is set to true.
         /// </summary>
         public bool IsPublic { get; set; }
-
-        /// <summary>
-        /// Indicates whether the space is vacant and available to book.
-        /// This field is independent of <see cref="Space.IsPublic"/>
-        /// </summary>
-        public bool IsVacant { get; set; } = true;
 
         /// <summary>
         /// The date and time when the space was created.
@@ -107,6 +96,6 @@ namespace FluentBlazorAuthTest.Data
     {
         Compact = 1,
         Standard = 2,
-        XL = 3
+        Xl = 3
     }
 }
