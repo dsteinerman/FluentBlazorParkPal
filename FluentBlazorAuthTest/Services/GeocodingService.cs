@@ -12,7 +12,7 @@ namespace FluentBlazorAuthTest.Services
             _httpClient = httpClientFactory.CreateClient();
         }
 
-        public async Task<(double Latitude, double Longitude, string Status)> GeocodeAddress(string address)
+        public async Task<(double latitude, double longitude, string status, string? formattedAddress)> GeocodeAddress(string address)
         {
             var url = $"https://maps.googleapis.com/maps/api/geocode/json?address={Uri.EscapeDataString(address)}&key={_apiKey}";
             var response = await _httpClient.GetAsync(url);
@@ -25,16 +25,23 @@ namespace FluentBlazorAuthTest.Services
 
                 if (status == "OK")
                 {
-                    var location = root.GetProperty("results")[0].GetProperty("geometry").GetProperty("location");
-                    var latitude = location.GetProperty("lat").GetDouble();
-                    var longitude = location.GetProperty("lng").GetDouble();
-                    return (latitude, longitude, status);
+                    var results = root.GetProperty("results").EnumerateArray();
+                    if (results.Any())
+                    {
+                        var firstResult = results.First();
+                        var location = firstResult.GetProperty("geometry").GetProperty("location");
+                        var latitude = location.GetProperty("lat").GetDouble();
+                        var longitude = location.GetProperty("lng").GetDouble();
+                        var formattedAddress = firstResult.GetProperty("formatted_address").GetString();
+
+                        return (latitude, longitude, status, formattedAddress);
+                    }
                 }
 
-                return (0, 0, status);
+                return (0, 0, status, null);
             }
 
-            return (0, 0, "ERROR");
+            return (0, 0, "ERROR", null);
         }
 
         public async Task<string> ReverseGeocodeCoordinates(decimal? latitude, decimal? longitude)
