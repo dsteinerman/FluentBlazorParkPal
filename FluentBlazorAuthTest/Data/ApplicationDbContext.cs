@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using FluentBlazorAuthTest.Data.Models;
+using Microsoft.AspNetCore.Identity;
 
 namespace FluentBlazorAuthTest.Data
 {
@@ -43,29 +43,28 @@ namespace FluentBlazorAuthTest.Data
                .HasForeignKey(b => b.ClientUserId)
                .IsRequired(false); // A user can have many bookings, but it's not required
                 // Additional configurations for Space can be added here
-            });
-
-            modelBuilder.Entity<IdentityRole>().HasData(new IdentityRole
-            {
-                Name = "User",
-                NormalizedName = "USER",
-                Id = Guid.NewGuid().ToString(),
-                ConcurrencyStamp = Guid.NewGuid().ToString(),
-
-            });
-            modelBuilder.Entity<IdentityRole>().HasData(new IdentityRole
-            {
-                Name = "Admin",
-                NormalizedName = "ADMIN",
-                Id = Guid.NewGuid().ToString(),
-                ConcurrencyStamp = Guid.NewGuid().ToString(),
-
-            });
-
-
-
-            // Other model configurations can be added here
         }
 
+        //modelBuilder.Entity<IdentityRole>().HasData(new IdentityRole
+        //{
+        //    Name = "User",
+        //    NormalizedName = "USER",
+        //    Id = Guid.NewGuid().ToString(),
+        //    ConcurrencyStamp = Guid.NewGuid().ToString(),
+
+        //});
+        //modelBuilder.Entity<IdentityRole>().HasData(new IdentityRole
+        //{
+        //    Name = "Admin",
+        //    NormalizedName = "ADMIN",
+        //    Id = Guid.NewGuid().ToString(),
+        //    ConcurrencyStamp = Guid.NewGuid().ToString(),
+
+        //});
+
+
+
+        // Other model configurations can be added here
     }
+
 }

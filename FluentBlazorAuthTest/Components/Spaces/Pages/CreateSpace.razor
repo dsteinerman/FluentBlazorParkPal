@@ -28,54 +28,63 @@
 
 <FluentGrid
     Justify="JustifyContent.FlexStart">
-    <FluentCard AreaRestricted="false">
-            <MapSearch @ref="_mapComponent" />
-            <input type="text" @bind="_searchQuery" required="true"/>
-            <FluentButton IconEnd="@(new Icons.Regular.Size16.Globe())"
-                          Appearance="Appearance.Accent"
-                          OnClick="@SubmitQuery">
-                Search
-            </FluentButton>
-            @* Embed Google Map *@
-        </FluentCard>
-        <br />
-        <EditForm method="post" Model="NewSpace" OnValidSubmit="AddSpace" FormName="create" Enhance>
-            <DataAnnotationsValidator/>
-            <ValidationSummary class="text-danger"/>
+    <FluentGridItem>
+        <FluentStack Orientation="Orientation.Vertical">
             <FluentCard AreaRestricted="false">
-                <h4>Listed Price:</h4>
-                <FluentNumberField id="price" @bind-Value="NewSpace.Price" class="form-control"/>
-                <ValidationMessage For="() => NewSpace.Price" class="text-danger"/>
+                <FluentStack Orientation="Orientation.Horizontal">
+                    @* Embed Google Map *@
+                    <MapSearch @ref="_mapComponent"/>
+                    <input type="text" @bind="_searchQuery" required="true"/>
+                    <FluentButton IconEnd="@(new Icons.Regular.Size16.Globe())"
+                                  Appearance="Appearance.Accent"
+                                  OnClick="@SubmitQuery">
+                        Search
+                    </FluentButton>
+                </FluentStack>
             </FluentCard>
-            <br/>
-            @* Size Dropdown *@
-            <FluentCard AreaRestricted="false">
-                <h4>Size:</h4>
-                <InputSelect @bind-Value="_selectedSize">
-                    @foreach (var size in SizeOptions)
-                    {
-                        <option value="@size">@size</option>
-                    }
-                </InputSelect>
-                <ValidationMessage For="() => NewSpace.Size" class="text-danger"/>
-            </FluentCard>
-            <br/>
-            @* Description TextArea *@
-            <FluentCard AreaRestricted="false">
-                <h4>Description</h4>
-                <FluentTextArea Appearance="FluentInputAppearance.Filled" id="description" @bind-Value="NewSpace.Description" class="form-control" Placeholder="Write a description..." Spellcheck="true"/>
-                <ValidationMessage For="() => NewSpace.Description" class="text-danger"/>
-            </FluentCard>
-            <br/>
-            @* IsPublic CheckBox *@
-            <div class="mb-3">
-                <em> I want this Space to be public and available upon submission. </em>
-                <InputCheckbox id="ispublic" @bind-Value="NewSpace.IsPublic" class="form-check-input"/>
-                <ValidationMessage For="() => NewSpace.IsPublic" class="text-danger"/>
-            </div>
-            <br/>
-            <FluentButton Type="ButtonType.Submit" Appearance="Appearance.Accent">Create Space</FluentButton>
-        </EditForm>
+            <EditForm method="post" Model="NewSpace" OnValidSubmit="AddSpace" FormName="create" Enhance>
+                <DataAnnotationsValidator/>
+                <ValidationSummary class="text-danger"/>
+                <FluentCard AreaRestricted="false">
+                    <h4>Listed Price:</h4>
+                    <FluentNumberField id="price" @bind-Value="NewSpace.Price" class="form-control"/>
+                    <ValidationMessage For="() => NewSpace.Price" class="text-danger"/>
+                </FluentCard>
+                <br/>
+                @* Size Dropdown *@
+                <FluentCard AreaRestricted="false">
+                    <h4>Size:</h4>
+                    <InputSelect @bind-Value="_selectedSize">
+                        @foreach (var size in SizeOptions)
+                        {
+                            <option value="@size">@size</option>
+                        }
+                    </InputSelect>
+                    <ValidationMessage For="() => NewSpace.Size" class="text-danger"/>
+                </FluentCard>
+                <br/>
+                @* Description TextArea *@
+                <FluentCard AreaRestricted="false">
+                    <h4>Description</h4>
+                    <FluentTextArea Appearance="FluentInputAppearance.Filled" id="description" @bind-Value="NewSpace.Description" Placeholder="Write a description..." Spellcheck="true"/>
+                    <ValidationMessage For="() => NewSpace.Description" class="text-danger"/>
+                </FluentCard>
+                <br/>
+                @* IsPublic CheckBox *@
+                <FluentCard>
+                    <FluentCheckbox bind-Value="@NewSpace.IsPublic"
+                                    id="ispublic"
+                                    bind-CheckState="@NewSpace.IsPublic"
+                                    Label="I want this Space to be public and available upon submission."/>
+                    <ValidationMessage For="() => NewSpace.IsPublic" class="text-danger"/>
+                </FluentCard>
+                <br/>
+                <FluentButton 
+                    Type="ButtonType.Submit" 
+                    Appearance="Appearance.Accent">Create Space</FluentButton>
+            </EditForm>
+        </FluentStack>
+    </FluentGridItem>
 </FluentGrid>
 
 @code {
