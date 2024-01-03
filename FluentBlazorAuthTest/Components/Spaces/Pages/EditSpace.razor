@@ -4,12 +4,16 @@
 @using FluentBlazorAuthTest.Data
 @using FluentBlazorAuthTest.Data.Services
 @using System.Security.Claims
+@using Microsoft.AspNetCore.Authorization
 @inject ISpaceService SpaceService
 @inject NavigationManager NavigationManager
 @inject AuthenticationStateProvider AuthenticationStateProvider
 
 
 @rendermode InteractiveServer
+
+@attribute [Authorize]
+
 
 @if (CurrentSpace != null)
 {

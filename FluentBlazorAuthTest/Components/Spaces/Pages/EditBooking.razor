@@ -1,8 +1,10 @@
-﻿@page "/edit-booking"
-@page "/edit-booking/{Id}"
+﻿@page "/edit-booking/{Id}"
+<link rel="stylesheet" href="/HTML/CSS/Styles.css" />
+
 
 @using FluentBlazorAuthTest.Data
 @using FluentBlazorAuthTest.Data.Services
+@using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Identity
 @using System.Security.Claims
 
@@ -14,12 +16,79 @@
 
 @rendermode InteractiveServer
 
+@attribute [Authorize]
+
+
 <PageTitle>Edit Booking</PageTitle>
 
 
 @if (CurrentSpace != null)
 {
-    <h3>Confirm Booking for "@CurrentSpace.Address"</h3>
+    <div class="pagination-container">
+        <h1>Book "@CurrentSpace.Address"</h1>
+    </div>
+    <FluentDivider Role="DividerRole.Separator"></FluentDivider>
+
+     <EditForm Model="CurrentBooking" OnSubmit="HandleSubmit">
+          <FluentSpacer Width="25"></FluentSpacer>
+
+    <div class="pagination-container">
+
+        <FluentCard Width="80%">
+
+            <div>
+                    <label for="size">Size: </label>
+                    <p>@CurrentSpace.Size</p>
+
+
+                    <label for="price">Price Per Day: </label>
+                    <p>@CurrentSpace.Price</p>
+
+                    <div>
+                        <label for="customerNotes">Customer Notes:</label>
+                        <InputTextArea id="customerNotes" @bind-Value="CurrentBooking.CustomerNotes" />
+                    </div>
+
+                    @if (user != null && user.IsInRole("Admin"))
+                    {
+                        <div>
+                            <label for="adminNotes">Admin Notes:</label>
+                            <InputTextArea id="adminNotes" @bind-Value="CurrentBooking.AdminNotes" />
+                        </div>
+                    }
+                    <div>
+                        <label for="startDateTime">Start Date:</label>
+                        <InputDate id="startDateTime" @bind-Value="StartDate"
+                                   min="@StartDate.ToString("yyyy-MM-dd")"
+                                   @onchange="OnDateChange" />
+                    </div>
+
+                    <div>
+                        <label for="endDateTime">End Date:</label>
+                        <InputDate id="endDateTime" @bind-Value="EndDate"
+                                   min="@MinEndDate"
+                                   @onchange="OnDateChange" />
+                    </div>
+                    <div>
+                        <label for="additionalFee">Additional Fee:</label>
+                        <p id="currentFee">@AdditionalFee.ToString("C")</p>
+
+                    </div>
+                    <div>
+                        <label>Total Amount Due:</label>
+                        <p>@TotalAmountDue.ToString("C")</p> 
+                    </div>
+                   
+            </div>
+
+
+                <FluentButton Type="ButtonType.Submit" Appearance="Appearance.Accent">Book Now</FluentButton>
+
+            </FluentCard>
+        </div>
+
+        <FluentSpacer Width="25"></FluentSpacer>
+    </EditForm>
 }
 else
 {
@@ -32,19 +101,60 @@ else
 
     private Space CurrentSpace { get; set; }
     private Booking CurrentBooking { get; set; } = new();
+    private bool IsExistingBooking { get; set; } = false;
 
+    private ClaimsPrincipal user;
+
+    private DateTime StartDate { get; set; } = DateTime.Now.Date;
+    private DateTime EndDate { get; set; } = DateTime.Now.Date.AddDays(1);
+
+    private decimal AdditionalFee { get; set; } = 5;
+    private decimal TotalAmountDue => CalculateTotalAmountDue();
+
+
+    private decimal CalculateTotalAmountDue()
+    {
+        var days = (EndDate - StartDate).Days;
+        var pricePerDay = CurrentSpace.Price ?? 0; // Handle nullable price
+        return (pricePerDay * days) + AdditionalFee;
+    }
+
+    private string MinEndDate => StartDate.AddDays(1).ToString("yyyy-MM-dd");
+
+    private void OnDateChange()
+    {
+        if (EndDate < StartDate.AddDays(1))
+        {
+            EndDate = StartDate.AddDays(1);
+        }
+
+    }
+   
     protected override async Task OnInitializedAsync()
     {
         if (Id is not null)
         {
             CurrentSpace = await SpaceService.GetSpaceByIdAsync(Id);
             CurrentBooking.SpaceId = Id;
+
+            var booking = await BookingService.GetBookingByIdAsync((string)Id);
+            if (booking != null)
+            {
+                CurrentBooking = booking;
+                IsExistingBooking = true;
+            }
         }
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        user = authState.User;
+        CurrentBooking.ClientUserId = user.Identity.IsAuthenticated ? user.FindFirst(ClaimTypes.NameIdentifier)?.Value : null;
     }
 
     async Task HandleSubmit()
     {
-        if (CurrentBooking.Id != null)
+        // Update AdminNotes with TotalAmountDue for all users
+        CurrentBooking.AdminNotes = $"Total Amount Due: {TotalAmountDue.ToString("C")}";
+
+        if (IsExistingBooking)
         {
             await BookingService.UpdateBookingAsync(CurrentBooking, (string) Id);
         }
@@ -53,6 +163,6 @@ else
             await BookingService.AddBookingAsync(CurrentBooking);
         }
 
-        NavigationManager.NavigateTo("/Book");
+        NavigationManager.NavigateTo("/Book/");
     }
 }
