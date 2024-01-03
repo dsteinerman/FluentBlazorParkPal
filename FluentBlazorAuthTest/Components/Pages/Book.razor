@@ -56,8 +56,21 @@ else
 
 private async Task LoadBookings()
 {
-    bookings = await BookingService.GetAllBookingsAsync();
-        (bookings, totalBookings) = await BookingService.GetBookingPageAsync(currentPage, pageSize);
+    var allBookings = await BookingService.GetAllBookingsAsync();
+    var filteredBookings = FilterBookingsForUser(allBookings);
+
+    totalBookings = filteredBookings.Count();
+    bookings = ApplyPagination(filteredBookings, currentPage, pageSize);
+}
+
+private IEnumerable<Booking> FilterBookingsForUser(IEnumerable<Booking> allBookings)
+{
+    return allBookings.Where(b => user.IsInRole("Admin") || b.ClientUserId == currentUser.Id);
+}
+
+private IEnumerable<Booking> ApplyPagination(IEnumerable<Booking> bookings, int page, int pageSize)
+{
+    return bookings.Skip((page - 1) * pageSize).Take(pageSize);
 }
 
     private async Task InitializeUserAsync()
@@ -77,7 +90,8 @@ private async Task LoadBookings()
 
     foreach (var booking in bookings)
     {
-        if (!spaceDetailsForBookings.ContainsKey(booking.SpaceId))
+        if (booking != null && !spaceDetailsForBookings.ContainsKey(booking.SpaceId))
+
         {
             Space space = await SpaceService.GetSpaceByIdAsync(booking.SpaceId);
             if (space != null)
@@ -93,8 +107,24 @@ private async Task LoadBookings()
     }
     private async Task CancelBooking(string Id)
 {
-    await BookingService.CancelBookingAsync(Id);
-    bookings = await BookingService.GetAllBookingsAsync();
+    var bookingToCancel = await DbContext.Bookings.FindAsync(Id);
+    if (bookingToCancel != null)
+    {
+        var spaceToUpdate = await DbContext.Spaces.FindAsync(bookingToCancel.SpaceId);
+        if (spaceToUpdate != null)
+        {
+            spaceToUpdate.IsAvailable = true;
+            DbContext.Spaces.Update(spaceToUpdate);
+        }
+
+        // Cancel the booking
+        bookingToCancel.IsActive = false;
+        bookingToCancel.EndDateTime = DateTime.Now;
+        await DbContext.SaveChangesAsync();
+
+        await LoadBookings();
+        StateHasChanged();
+    }
 
     NavigationManager.NavigateTo("/Book/");
 }
@@ -150,13 +180,13 @@ public async Task PayForBooking(string bookingId)
             await LoadBookings();
         }
     }
-
+    
     void Search() => NavigationManager.NavigateTo("/spaces/search");
 }
 @{
     void DisplaySections()
     {
-        DisplaySection("Pending Bookings", bookings.Where(b => b.PaymentStatus == PaymentStatus.Unpaid));
+        DisplaySection("Pending Bookings", bookings.Where(b => b.PaymentStatus == PaymentStatus.Unpaid && b.IsActive));
         DisplaySection("Current Bookings", bookings.Where(b => b.IsActive && b.EndDateTime > DateTime.Now && b.PaymentStatus != PaymentStatus.Unpaid));
         DisplaySection("Past Bookings", bookings.Where(b => b.EndDateTime <= DateTime.Now || !b.IsActive));
     }
@@ -170,12 +200,14 @@ public async Task PayForBooking(string bookingId)
 
         if (bookings.Any())
         {
+            bool displayMessage = true;
             foreach (var booking in bookings)
             {
                 <FluentSpacer Width="25"></FluentSpacer>
 
                 if (user.IsInRole("Admin") || booking.ClientUserId == currentUser.Id)
                 {
+                 displayMessage = false;
                 <div class="pagination-container">
                 <FluentCard Width="80%">
 
@@ -186,13 +218,16 @@ public async Task PayForBooking(string bookingId)
                                     @if (spaceDetailsForBookings.TryGetValue(booking.SpaceId, out var space))
                                     {
                                         <h3 class="space-address">@space.Address</h3>
+                                         <p class="booking-details">Booking Id: @booking.Id</p>
+                                         <p class="booking-details">Total Price: @booking.Price.ToString("C")</p>
+                                         <p class="booking-details">Payment Status: @booking.PaymentStatus.ToString()</p>
+                                         <p class="booking-details"> Active Status: @booking.IsActive </p>
+                                         <p class="booking-details"> Is Available: @space.IsAvailable </p>
+                                          <p class="booking-details"> </p>
                                     }
-                                    <p class="booking-details">Booking Info: @booking</p> <!-- Replace with actual property -->
-                                    <p class="booking-details">Total Price: @booking.Price.ToString("C")</p>
-                                    <p>Payment Status: @booking.PaymentStatus.ToString()</p>
-
-                                    <div class="booking-actions">
-                                        <FluentButton OnClick="@(() => EditBooking(@booking.Id))">Edit</FluentButton>
+                                </div>
+                                <div class="booking-actions">
+                                        <FluentButton OnClick="@(() => EditBooking(@booking.SpaceId))">Edit</FluentButton>
 
                                         <FluentButton OnClick="@(() => CancelBooking(@booking.Id))">Cancel</FluentButton>
                                         @if (booking.PaymentStatus != PaymentStatus.Paid)
@@ -204,7 +239,6 @@ public async Task PayForBooking(string bookingId)
                                             <FluentButton Appearance="Appearance.Lightweight" Color="Red" @onclick="@(() => DeleteBooking(booking.Id))">Delete</FluentButton>
                                         }
                                     </div>
-                                </div>
                             </div>
                         </section
                     </main>
