@@ -14,7 +14,12 @@
 @if (CurrentSpace != null)
 {
     <PageTitle>Edit Space</PageTitle>
-    <h3>Edit "@CurrentSpace.Address"</h3>
+    <div class="pagination-container">
+    <h1>Edit "@CurrentSpace.Address"</h1>
+    </div>
+
+    <FluentDivider Role="DividerRole.Separator"></FluentDivider>
+
     <EditForm Model="CurrentSpace" OnSubmit="HandleSubmit">
 
 
