@@ -8,12 +8,15 @@
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.EntityFrameworkCore
 @using Microsoft.IdentityModel.Tokens
+@using System.Security.Claims
 
 
 @inject ApplicationDbContext DbContext
 @inject NavigationManager NavigationManager
 @inject ISpaceService SpaceService
 @inject GeocodingService GeocodingService
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
 
 
 @attribute [Authorize]
@@ -39,18 +42,39 @@
         <p>Size: @space.Size.ToString()</p>
         <p>Price: $@space.Price Per Day</p>
         <p>Description: @space.Description</p>
-
-        @if (space.IsAvailable)
-        {
-            <p>Availability: Available to book</p>
-            <FluentButton OnClick="@(() => BookNow(space.Id))">Book Now</FluentButton>
-        }
-        else
-        {
-            <p>Availability: Unavailable</p>
-        }
         <p>Vacant Status: @space.IsVacant</p>
         <p>Public Status: @space.IsPublic </p>
+
+            @if (user != null && user.IsInRole("Admin"))
+            {
+                if (space.IsAvailable)
+                {
+                    <p>Availability: You are an Admin you can Book anything</p>
+                    <FluentButton OnClick="@(() => BookNow(space.Id))">Book Now</FluentButton>
+                }
+                else
+                {
+                    <p>Availability: Unavailable</p>
+                }
+
+                <FluentButton Appearance="Appearance.Lightweight" Color="Red" @onclick="@(() => DeleteSpace(space.Id))">Delete</FluentButton>
+                <FluentButton Appearance="Appearance.Accent" @onclick="@(() => EditSpace(space.Id))">Edit Space</FluentButton>
+            }
+            else if (space.IsAvailable && (space.HostId != user?.FindFirst(c => c.Type == ClaimTypes.NameIdentifier)?.Value))
+            {
+                <p>Availability: Available to book</p>
+                <FluentButton OnClick="@(() => BookNow(space.Id))">Book Now</FluentButton>
+            }
+            else if (space.HostId == user?.FindFirst(c => c.Type == ClaimTypes.NameIdentifier)?.Value)
+            {
+                <p>Availability: You are not allowed to Book own Space</p>
+                <FluentButton disabled OnClick="@(() => BookNow(space.Id))">Book Now</FluentButton>
+            }
+            else
+            {
+                <p>Availability: Unavailable</p>
+            }
+
     </FluentCard>
      </div>
 
@@ -77,9 +101,14 @@ else
     private const int pageSize = 10;
     private int totalPages => (int)Math.Ceiling((double)totalSpaces / pageSize);
 
+    private ClaimsPrincipal user;
+
     protected override async Task OnInitializedAsync()
     {
-    await LoadSpaces();
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        user = authState.User;
+
+        await LoadSpaces();
     }
 
     private async Task LoadSpaces()
@@ -115,6 +144,10 @@ else
     {
         await SpaceService.DeleteSpaceAsync(Id);
         spaces = await SpaceService.GetAllSpacesAsync();
+    }
+    void EditSpace(string Id)
+    {
+    NavigationManager.NavigateTo($"/edit-space/{Id}");
     }
 
 }
