@@ -15,6 +15,45 @@
 {
     <PageTitle>Edit Space</PageTitle>
     <h3>Edit "@CurrentSpace.Address"</h3>
+    <EditForm Model="CurrentSpace" OnSubmit="HandleSubmit">
+
+
+    <FluentSpacer Width="25"></FluentSpacer>
+
+    <div class="pagination-container">
+
+        <FluentCard Width="80%">
+            <label for="size">Size: </label>
+            <InputSelect id="size" @bind-Value="CurrentSpace.Size">
+                @foreach (var size in Enum.GetValues(typeof(SpaceSize)))
+                {
+                    <option value="@size">@size</option>
+                }
+            </InputSelect>
+
+            <div>
+                <label for="price">Price Per Day</label>
+                <InputNumber id="price" @bind-Value="CurrentSpace.Price" />
+            </div>
+            <div>
+                <label for="description">Description</label>
+                <InputText id="description" @bind-Value="CurrentSpace.Description" />
+            </div>
+
+            <div>
+                <label for="isPublic">Post space?</label>
+                <InputRadioGroup id="isPublic" @bind-Value="CurrentSpace.IsPublic">
+                    <InputRadio Value="true" /> Yes
+                    <InputRadio Value="false" /> No
+                </InputRadioGroup>
+            </div>
+            <FluentButton Type="ButtonType.Submit" Appearance="Appearance.Accent">Save</FluentButton>
+
+        </FluentCard>
+    </div>
+
+    <FluentSpacer Width="25"></FluentSpacer>
+    </EditForm>
 
 }
 
@@ -54,5 +93,12 @@
         bool isAdmin = user.IsInRole("Admin");
 
         return isHost || isAdmin;
+    }
+
+    async Task HandleSubmit()
+    {
+        await SpaceService.UpdateSpaceAsync(CurrentSpace, (string) Id);
+        NavigationManager.NavigateTo("/spaces/search");
+        
     }
 }

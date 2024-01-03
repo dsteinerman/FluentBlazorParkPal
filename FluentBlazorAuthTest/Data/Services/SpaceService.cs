@@ -47,9 +47,19 @@ namespace FluentBlazorAuthTest.Data.Services
             throw new NotImplementedException();
         }
 
-        public Task UpdateSpaceAsync(Space space)
+        public async Task UpdateSpaceAsync(Space space, string spaceId)
         {
-            throw new NotImplementedException();
+            var dbSpace = await _context.Spaces.FindAsync(spaceId);
+            if (dbSpace != null)
+            {
+                dbSpace.Size = space.Size;
+                dbSpace.Longitude = space.Longitude;
+                dbSpace.Latitude = space.Latitude;
+                dbSpace.Price = space.Price;
+                dbSpace.Description = space.Description;
+
+                await _context.SaveChangesAsync();
+            }
         }
 
         async Task<IEnumerable<Space>> GetSpacesByHostIdAsync(string hostId)
@@ -83,5 +93,6 @@ namespace FluentBlazorAuthTest.Data.Services
 
             return (spaces, totalSpaces);
         }
+
     }
 }
