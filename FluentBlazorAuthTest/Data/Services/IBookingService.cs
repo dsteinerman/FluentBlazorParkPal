@@ -1,35 +1,36 @@
-﻿namespace FluentBlazorAuthTest.Data.Services
+﻿
+namespace FluentBlazorAuthTest.Data.Services;
+
+public interface IBookingService
 {
-    public interface IBookingService
-    {
-        Task<Booking> CreateBookingAsync(Booking booking);
+    Task<Booking> CreateBookingAsync(Booking booking);
 
-        Task<Booking> GetBookingByIdAsync(string Id);
+    Task<Booking> GetBookingByIdAsync(string Id);
 
-        //Task<Booking> GetBookingByClientIdAsync(int clientUserId);
+    //Task<Booking> GetBookingByClientIdAsync(int clientUserId);
 
-        Task<Booking> GetPaymentStatusByIdAsync(string Id);
+    Task<Booking> GetPaymentStatusByIdAsync(string Id);
 
-        Task<Booking> GetBookingStatusByIdAsync(string Id);
+    Task<Booking> GetBookingStatusByIdAsync(string Id);
 
-        Task<decimal> GetSpacePriceByIdAsync(string Id);
+    Task<decimal> GetSpacePriceByIdAsync(string Id);
 
-        // Task<Booking> GetBookingByHostAsync(String ClientUserId);
+    // Task<Booking> GetBookingByHostAsync(String ClientUserId);
 
-        Task<IEnumerable<Booking>> GetAllBookingsAsync();
+    Task<IEnumerable<Booking>> GetAllBookingsAsync();
 
-        Task UpdateBookingAsync(Booking booking, string Id);
+    Task UpdateBookingAsync(Booking booking, string Id);
 
-        Task DeleteBookingAsync(string Id);
+    Task DeleteBookingAsync(string Id);
 
-        Task AddBookingAsync(Booking booking);
+    Task AddBookingAsync(Booking booking);
 
-        Task UpdateBookingPriceBasedOnSpace(string bookingId);
+    Task UpdateBookingPriceBasedOnSpace(string bookingId);
 
-        Task UpdatePaymentStatusUnpaidByIdAsync(string bookingId, BookingStatus bookingstatus);
+    Task UpdatePaymentStatusUnpaidByIdAsync(string bookingId, BookingStatus bookingstatus);
 
-        Task UpdatePaymentStatusPaidByIdAsync(string bookingId, BookingStatus bookingstatus);
+    Task UpdatePaymentStatusPaidByIdAsync(string bookingId, BookingStatus bookingstatus);
 
-        Task<IEnumerable<Booking>> GetBookingsBySpaceIdAsync(string spaceId);
-    }
+    Task<IEnumerable<Booking>> GetBookingsBySpaceIdAsync(string spaceId);
+
 }

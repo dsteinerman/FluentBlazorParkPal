@@ -1,72 +1,135 @@
 ﻿@page "/Book"
-@using System.Collections.Generic
+@rendermode InteractiveServer
+
+@using FluentBlazorAuthTest.Data
+@using FluentBlazorAuthTest.Data.Services
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.EntityFrameworkCore
+@using System.Security.Claims
+
+@using System.Threading.Tasks;
+@using Newtonsoft.Json.Linq;
+
+@attribute [Authorize]
+
+
+@inject UserManager<ApplicationUser> UserManager
+@inject ApplicationDbContext DbContext
+@inject NavigationManager NavigationManager
+
+@inject IBookingService BookingService
+@inject ISpaceService SpaceService
+@inject AuthenticationStateProvider AuthenticationStateProvider
 
 <link rel="stylesheet" href="/HTML/CSS/Styles.css" />
 
 <!-- The main section for displaying bookings -->
 
-<main class="bookings-page-content">
-    <section class="booking-management">
-        <div class="bookings-list">
-            @foreach (var booking in Bookings)
-            {
-                <div class="booking-item">
-                    <h3 class="booking-title">@booking.Title</h3>
-                    <p class="booking-details">Location: @booking.Location</p>
-                    <p class="booking-details">Car Type: @booking.CarType</p>
-                    <p class="booking-details">Dates: @booking.Dates</p>
-                    <p class="booking-details">Status: @booking.Status</p>
-                  
-                    <p class="booking-details">Total Price: @booking.Price</p>
-                    <div class="booking-actions">
-                        <button class="modify-btn">Modify</button>
-                        <button class="cancel-btn">Cancel</button>
+@if (bookings != null)
+{
+    bool displayMessage = true;
+    foreach (var booking in bookings)
+    {
+        if (user.IsInRole("Admin") || booking.ClientUserId == currentUser.Id)
+        {
+            <main class="bookings-page-content">
+                <section class="booking-management">
+                    <div class="bookings-list">
+                        <div class="booking-item">
+                        @if (spaceDetailsForBookings.TryGetValue(booking.SpaceId, out var space))
+                        {
+                            <h3 class="space-address">Address: @space.Address</h3>
+                        }
+                            <p class="booking-details">Location: @booking</p>
+                            <p class="booking-details">Car Type: @booking</p>
+                            <p class="booking-details">Dates: @booking</p>
+                            <p class="booking-details">Status: @booking</p>
+
+                            <p class="booking-details">Total Price: @booking.Price</p>
+                            <div class="booking-actions">
+                                <button class="modify-btn">Modify</button>
+                                <button class="cancel-btn">Cancel</button>
+                            </div>
+                        </div>
                     </div>
-                </div>
-            }
-        </div>
-    </section>
-</main>
+                </section>
+            </main>
+        }
+    }
+    if (displayMessage)
+    {
+        <p><em>You dont have any current bookings, why not search for one? </em></p>
+        <FluentButton Appearance="Appearance.Accent" @onclick="@(() => Search())">Search</FluentButton>
+    }
+}
+
 
 @code {
+    private IEnumerable<Booking> bookings;
+    private Dictionary<string, Space> spaceDetailsForBookings = new Dictionary<string, Space>(); // Class level variable
 
-    // Class defining the structure of a booking
-  
-    public class BookingModel
+    private IEnumerable<Space> spaces;
+
+
+    private ApplicationUser currentUser;
+    private ClaimsPrincipal user;
+
+
+    public Booking CurrentBooking { get; set; } = new();
+
+    protected override async Task OnInitializedAsync()
     {
-        public string Title { get; set; }
-        public string Location { get; set; }
-        public string CarType { get; set; }
-        public string Dates { get; set; }
-        public string Status { get; set; }
-        public int PassengerCount { get; set; }
-        public decimal Price { get; set; }
+    await InitializeUserAsync();
+    await LoadDataAsync();
+
     }
 
-    // List of sample bookings
-
-    List<BookingModel> Bookings = new List<BookingModel>
+    private async Task InitializeUserAsync()
     {
-        new BookingModel
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        user = authState.User; // Store the user in the property
+
+        if (user.Identity.IsAuthenticated)
         {
-            Title = "Booking 1",
-            Location = "City 1",
-            CarType = "SUV",
-            Dates = "Feb 23 - Feb 28",
-            Status = "Confirmed",
-          
-            Price = 500
-        },
-        new BookingModel
-        {
-            Title = "Booking 2",
-            Location = "City 2",
-            CarType = "Sedan",
-            Dates = "Mar 10 - Mar 15",
-            Status = "Confirmed",
-           
-            Price = 300
+            var userId = UserManager.GetUserId(user);
+            currentUser = await UserManager.FindByIdAsync(userId);
         }
-    };
+
+    }
+    private async Task LoadDataAsync()
+    {
+        // Assuming userId is needed for these methods
+       // var userId = UserManager.GetUserId(user);
+        bookings = await BookingService.GetAllBookingsAsync();
+
+
+        // Initialize or clear the dictionary
+        spaceDetailsForBookings.Clear();
+
+        foreach (var booking in bookings)
+        {
+            if (!spaceDetailsForBookings.ContainsKey(booking.SpaceId))
+            {
+                Space space = await SpaceService.GetSpaceByIdAsync(booking.SpaceId);
+                if (space != null)
+                {
+                    spaceDetailsForBookings[booking.SpaceId] = space;
+                }
+            }
+        }
+
+        //hostedSpaces = await SpaceService.GetSpacesByHostIdAsync(userId);
+
+        //foreach (var space in hostedSpaces)
+        //{
+        //    var bookingsForSpace = await BookingService.GetBookingsBySpaceIdAsync(space.Id);
+        //    spaceBookings[space.Id] = bookingsForSpace;
+        //}
+    }
+    void Search() => NavigationManager.NavigateTo("/spaces/search");
+
+  
+   
 }
 

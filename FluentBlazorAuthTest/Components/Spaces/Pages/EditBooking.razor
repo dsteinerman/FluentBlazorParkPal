@@ -1,0 +1,58 @@
+﻿@page "/edit-booking"
+@page "/edit-booking/{Id}"
+
+@using FluentBlazorAuthTest.Data
+@using FluentBlazorAuthTest.Data.Services
+@using Microsoft.AspNetCore.Identity
+@using System.Security.Claims
+
+@inject ISpaceService SpaceService
+@inject IBookingService BookingService
+@inject NavigationManager NavigationManager
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject UserManager<ApplicationUser> UserManager
+
+@rendermode InteractiveServer
+
+<PageTitle>Edit Booking</PageTitle>
+
+
+@if (CurrentSpace != null)
+{
+    <h3>Confirm Booking for "@CurrentSpace.Address"</h3>
+}
+else
+{
+    <h3>Loading space details...</h3>
+}
+
+@code {
+    [Parameter]
+    public string? Id { get; set; }
+
+    private Space CurrentSpace { get; set; }
+    private Booking CurrentBooking { get; set; } = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (Id is not null)
+        {
+            CurrentSpace = await SpaceService.GetSpaceByIdAsync(Id);
+            CurrentBooking.SpaceId = Id;
+        }
+    }
+
+    async Task HandleSubmit()
+    {
+        if (CurrentBooking.Id != null)
+        {
+            await BookingService.UpdateBookingAsync(CurrentBooking, (string) Id);
+        }
+        else
+        {
+            await BookingService.AddBookingAsync(CurrentBooking);
+        }
+
+        NavigationManager.NavigateTo("/Book");
+    }
+}

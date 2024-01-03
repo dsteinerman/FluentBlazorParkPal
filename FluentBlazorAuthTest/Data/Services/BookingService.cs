@@ -14,9 +14,10 @@ namespace FluentBlazorAuthTest.Data.Services
             _spaceService = spaceService;
         }
 
-        public Task AddBookingAsync(Booking booking)
+        public async Task AddBookingAsync(Booking booking)
         {
-            throw new NotImplementedException();
+            _context.Bookings.Add(booking);
+            await _context.SaveChangesAsync();
         }
 
         public Task<Booking> CreateBookingAsync(Booking booking)
@@ -29,24 +30,29 @@ namespace FluentBlazorAuthTest.Data.Services
             throw new NotImplementedException();
         }
 
-        public Task<IEnumerable<Booking>> GetAllBookingsAsync()
+        public async Task<IEnumerable<Booking>> GetAllBookingsAsync()
         {
-            throw new NotImplementedException();
+            var result = await _context.Bookings.ToListAsync();
+            return result;
         }
 
-        public Task<Booking> GetBookingByIdAsync(string Id)
+        public async Task<Booking> GetBookingByIdAsync(string Id)
         {
-            throw new NotImplementedException();
+            var result = await _context.Bookings.FindAsync(Id);
+            return result;
         }
 
-        public Task<IEnumerable<Booking>> GetBookingsBySpaceIdAsync(string spaceId)
+        public async Task<IEnumerable<Booking>> GetBookingsBySpaceIdAsync(string spaceId)
         {
-            throw new NotImplementedException();
+            return await _context.Bookings
+                             .Where(b => b.SpaceId == spaceId)
+                             .ToListAsync();
         }
 
-        public Task<Booking> GetBookingStatusByIdAsync(string Id)
+        public async Task<Booking> GetBookingStatusByIdAsync(string Id)
         {
-            throw new NotImplementedException();
+            var booking = await _context.Bookings.FindAsync(Id);
+            return booking;
         }
 
         public Task<Booking> GetPaymentStatusByIdAsync(string Id)
@@ -59,9 +65,23 @@ namespace FluentBlazorAuthTest.Data.Services
             throw new NotImplementedException();
         }
 
-        public Task UpdateBookingAsync(Booking booking, string Id)
+        public async Task UpdateBookingAsync(Booking booking, string Id)
         {
-            throw new NotImplementedException();
+            var dbBooking = await _context.Bookings.FindAsync(Id);
+            if (dbBooking != null)
+            {
+                dbBooking.StartDateTime = booking.StartDateTime;
+                dbBooking.EndDateTime = booking.EndDateTime;
+                dbBooking.UpdatedAt = DateTime.Now;
+                dbBooking.AdminNotes = booking.AdminNotes;
+                dbBooking.BookingStatus = booking.BookingStatus;
+                dbBooking.CustomerNotes = booking.CustomerNotes;
+                dbBooking.Price = booking.Price;
+                dbBooking.PaymentStatus = booking.PaymentStatus;
+
+                await _context.SaveChangesAsync();
+
+            }
         }
 
         public Task UpdateBookingPriceBasedOnSpace(string bookingId)
@@ -69,14 +89,25 @@ namespace FluentBlazorAuthTest.Data.Services
             throw new NotImplementedException();
         }
 
-        public Task UpdatePaymentStatusPaidByIdAsync(string bookingId, BookingStatus bookingstatus)
+        public async Task UpdatePaymentStatusUnpaidByIdAsync(string bookingId, BookingStatus bookingstatus)
         {
-            throw new NotImplementedException();
+            var booking = await _context.Bookings.FindAsync(bookingId);
+
+            booking.PaymentStatus = PaymentStatus.Unpaid;
+
+            await _context.SaveChangesAsync();
+
+
         }
 
-        public Task UpdatePaymentStatusUnpaidByIdAsync(string bookingId, BookingStatus bookingstatus)
+        public async Task UpdatePaymentStatusPaidByIdAsync(string bookingId, BookingStatus bookingstatus)
         {
-            throw new NotImplementedException();
+            var booking = await _context.Bookings.FindAsync(bookingId);
+
+            booking.PaymentStatus = PaymentStatus.Unpaid;
+
+            await _context.SaveChangesAsync();
         }
+
     }
 }
