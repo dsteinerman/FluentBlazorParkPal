@@ -1,4 +1,6 @@
 ﻿@page "/spaces/search"
+<link rel="stylesheet" href="/HTML/CSS/Styles.css" />
+
 
 @using FluentBlazorAuthTest.Data
 @using FluentBlazorAuthTest.Data.Services
@@ -17,8 +19,10 @@
 @attribute [Authorize]
 
 @rendermode InteractiveServer
-
+<div class="pagination-container">
 <h1>Search for a Space</h1>
+</div>
+
 <FluentDivider Role="DividerRole.Separator"></FluentDivider>
 <FluentSpacer Width="25"></FluentSpacer>
 
@@ -27,6 +31,9 @@
     foreach (var space in spaces)
     {
     <FluentSpacer Width="25"></FluentSpacer>
+
+    <div class="pagination-container">
+
     <FluentCard Width="80%">
         <p>Location: @space.Address</p>
         <p>Size: @space.Size.ToString()</p>
@@ -45,22 +52,17 @@
         <p>Vacant Status: @space.IsVacant</p>
         <p>Public Status: @space.IsPublic </p>
     </FluentCard>
+     </div>
+
     <FluentSpacer Width="25"></FluentSpacer>
     }
 
-<FluentSpacer Width="25"></FluentSpacer>
-<div>
-    @if (currentPage > 1)
-        {
-    <FluentButton OnClick="PreviousPage">Previous</FluentButton>
-        }
-    <span>Page @currentPage of @totalPages</span>
-    @if (currentPage < totalPages)
-        {
-    <FluentButton OnClick="NextPage">Next</FluentButton>
-        }
+
+<div class="pagination-container">
+    <FluentButton Disabled="@(currentPage <= 1)" OnClick="PreviousPage">Previous</FluentButton>
+    <span> Page @currentPage of @totalPages </span>
+    <FluentButton Disabled="@(currentPage >= totalPages)" OnClick="NextPage">Next</FluentButton>
 </div>
-<FluentSpacer Width="25"></FluentSpacer>
 }
 else
 {

@@ -195,3 +195,10 @@ input[type="checkbox"] {
     .testimonial-content em {
         font-style: italic;
     }
+
+.pagination-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    
+}
