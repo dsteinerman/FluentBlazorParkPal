@@ -1,6 +1,7 @@
 ﻿@page "/spaces/search"
 
 @using FluentBlazorAuthTest.Data
+@using FluentBlazorAuthTest.Data.Services
 @using FluentBlazorAuthTest.Services
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.EntityFrameworkCore
@@ -9,6 +10,7 @@
 
 @inject ApplicationDbContext DbContext
 @inject NavigationManager NavigationManager
+@inject ISpaceService SpaceService
 @inject GeocodingService GeocodingService
 
 
@@ -31,15 +33,17 @@
         <p>Price: $@space.Price</p>
         <p>Description: @space.Description</p>
 
-        @if (space.IsVacant)
+        @if (space.IsAvailable)
         {
             <p>Availability: Available to book</p>
             <FluentButton OnClick="@(() => BookNow(space.Id))">Book Now</FluentButton>
         }
         else
         {
-            <p>Availability: Currently booked</p>
+            <p>Availability: Unavailable</p>
         }
+        <p>Vacant Status: @space.IsVacant</p>
+        <p>Public Status: @space.IsPublic </p>
     </FluentCard>
     <FluentSpacer Width="25"></FluentSpacer>
     }
@@ -50,8 +54,8 @@
         {
     <FluentButton OnClick="PreviousPage">Previous</FluentButton>
         }
-    <span>Page @currentPage of @TotalPages</span>
-    @if (currentPage < TotalPages)
+    <span>Page @currentPage of @totalPages</span>
+    @if (currentPage < totalPages)
         {
     <FluentButton OnClick="NextPage">Next</FluentButton>
         }
@@ -68,33 +72,28 @@ else
     private IEnumerable<Space> spaces;
     private int totalSpaces;
     private int currentPage = 1;
-    private const int PageSize = 10;
-    private int TotalPages => (int)Math.Ceiling((double)totalSpaces / PageSize);
+    private const int pageSize = 10;
+    private int totalPages => (int)Math.Ceiling((double)totalSpaces / pageSize);
 
     protected override async Task OnInitializedAsync()
     {
-        await LoadSpaces(currentPage, PageSize);
+    await LoadSpaces();
     }
 
-    private async Task LoadSpaces(int pageNumber, int pageSize)
+    private async Task LoadSpaces()
     {
-    var query = DbContext.Spaces
-        .Where(s => s.IsPublic)
-        .OrderByDescending(s => s.DateCreated);
+        spaces = await SpaceService.GetAllSpacesAsync();
+        (spaces, totalSpaces) = await SpaceService.GetSpacesPageAsync(currentPage, pageSize);
 
-    totalSpaces = await query.CountAsync();
-
-    spaces = await query.Skip((pageNumber - 1) * pageSize)
-        .Take(pageSize)
-        .ToListAsync();
     }
+    
 
     private async Task NextPage()
     {
-        if (currentPage < TotalPages)
+        if (currentPage < totalPages)
         {
             currentPage++;
-            await LoadSpaces(currentPage, PageSize);
+            await LoadSpaces();
         }
     }
 
@@ -103,12 +102,17 @@ else
         if (currentPage > 1)
         {
             currentPage--;
-            await LoadSpaces(currentPage, PageSize);
+            await LoadSpaces();
         }
     }
     private void BookNow(string spaceId)
     {
-    // Navigate to the booking page with the space ID as a parameter
-    NavigationManager.NavigateTo($"/book-space/{spaceId}");
+        NavigationManager.NavigateTo($"/book-space/{spaceId}");
     }
+    async Task DeleteSpace(string Id)
+    {
+        await SpaceService.DeleteSpaceAsync(Id);
+        spaces = await SpaceService.GetAllSpacesAsync();
+    }
+
 }

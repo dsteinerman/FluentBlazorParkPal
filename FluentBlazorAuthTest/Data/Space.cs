@@ -76,6 +76,9 @@ namespace FluentBlazorAuthTest.Data
         /// </summary>
         public bool IsVacant { get; set; } = true;
 
+        public bool IsAvailable { get; set; } = false;
+
+
         /// <summary>
         /// The date and time when the space was created.
         /// </summary>

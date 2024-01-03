@@ -96,6 +96,7 @@
     private SpaceSize _selectedSize;
     private IEnumerable<SpaceSize> SizeOptions => Enum.GetValues(typeof(SpaceSize)).Cast<SpaceSize>();
 
+
     [SupplyParameterFromForm]
     public Space NewSpace { get; set; } = new();
     private ApplicationUser? _currentUser;
@@ -149,6 +150,7 @@
             if (userId != null)
                 _currentUser = await UserManager.FindByIdAsync(userId);
         }
+
     }
 
 
