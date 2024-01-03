@@ -1,0 +1,58 @@
+﻿@page "/edit-space/{Id}"
+<link rel="stylesheet" href="/HTML/CSS/Styles.css" />
+
+@using FluentBlazorAuthTest.Data
+@using FluentBlazorAuthTest.Data.Services
+@using System.Security.Claims
+@inject ISpaceService SpaceService
+@inject NavigationManager NavigationManager
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+
+@rendermode InteractiveServer
+
+@if (CurrentSpace != null)
+{
+    <PageTitle>Edit Space</PageTitle>
+    <h3>Edit "@CurrentSpace.Address"</h3>
+
+}
+
+@code {
+    [Parameter]
+    public string? Id { get; set; }
+
+    public Space CurrentSpace { get; set; }
+
+    private IEnumerable<Space> spaces;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        if (!string.IsNullOrEmpty(Id))
+        {
+            CurrentSpace = await SpaceService.GetSpaceByIdAsync(Id);
+        }
+
+        if (CurrentSpace == null || !IsValidUserForEditing(user))
+        {
+            // Navigate to create or unauthorized access page
+            NavigationManager.NavigateTo("/spaces/create/");
+        }
+    }
+
+    private bool IsValidUserForEditing(ClaimsPrincipal user)
+    {
+        if (user.Identity?.IsAuthenticated != true || CurrentSpace == null)
+        {
+            return false;
+        }
+
+        bool isHost = CurrentSpace.HostId == user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        bool isAdmin = user.IsInRole("Admin");
+
+        return isHost || isAdmin;
+    }
+}
