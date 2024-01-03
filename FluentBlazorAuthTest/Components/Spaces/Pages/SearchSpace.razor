@@ -24,16 +24,42 @@
 {
     foreach (var space in spaces)
     {
-        <FluentSpacer Width="25"></FluentSpacer>
-        <FluentCard Width="80%">
-            <p>Location: @space.Address</p>
-            <p>Size: @space.Size.ToString()</p>
-            <p>Price: $@space.Price</p>
-            <p>Description: @space.Description</p>
-        </FluentCard>
-        <FluentSpacer Width="25"></FluentSpacer>
+    <FluentSpacer Width="25"></FluentSpacer>
+    <FluentCard Width="80%">
+        <p>Location: @space.Address</p>
+        <p>Size: @space.Size.ToString()</p>
+        <p>Price: $@space.Price</p>
+        <p>Description: @space.Description</p>
+
+        @if (space.IsVacant)
+        {
+            <p>Availability: Available to book</p>
+            <FluentButton OnClick="@(() => BookNow(space.Id))">Book Now</FluentButton>
+        }
+        else
+        {
+            <p>Availability: Currently booked</p>
+        }
+    </FluentCard>
+    <FluentSpacer Width="25"></FluentSpacer>
     }
-} else {
+
+<FluentSpacer Width="25"></FluentSpacer>
+<div>
+    @if (currentPage > 1)
+        {
+    <FluentButton OnClick="PreviousPage">Previous</FluentButton>
+        }
+    <span>Page @currentPage of @TotalPages</span>
+    @if (currentPage < TotalPages)
+        {
+    <FluentButton OnClick="NextPage">Next</FluentButton>
+        }
+</div>
+<FluentSpacer Width="25"></FluentSpacer>
+}
+else
+{
     <p><em>There are no spaces to display.</em></p>
 }
 
@@ -43,6 +69,7 @@
     private int totalSpaces;
     private int currentPage = 1;
     private const int PageSize = 10;
+    private int TotalPages => (int)Math.Ceiling((double)totalSpaces / PageSize);
 
     protected override async Task OnInitializedAsync()
     {
@@ -51,16 +78,37 @@
 
     private async Task LoadSpaces(int pageNumber, int pageSize)
     {
-        var query = DbContext.Spaces
-            .Where(s => s.IsPublic)
-            .OrderByDescending(s => s.DateCreated);
+    var query = DbContext.Spaces
+        .Where(s => s.IsPublic)
+        .OrderByDescending(s => s.DateCreated);
 
-        totalSpaces = await query.CountAsync();
+    totalSpaces = await query.CountAsync();
 
-        spaces = await query.Skip((pageNumber - 1) * pageSize)
-            .Take(pageSize)
-            .ToListAsync();
-
+    spaces = await query.Skip((pageNumber - 1) * pageSize)
+        .Take(pageSize)
+        .ToListAsync();
     }
 
+    private async Task NextPage()
+    {
+        if (currentPage < TotalPages)
+        {
+            currentPage++;
+            await LoadSpaces(currentPage, PageSize);
+        }
+    }
+
+    private async Task PreviousPage()
+    {
+        if (currentPage > 1)
+        {
+            currentPage--;
+            await LoadSpaces(currentPage, PageSize);
+        }
+    }
+    private void BookNow(string spaceId)
+    {
+    // Navigate to the booking page with the space ID as a parameter
+    NavigationManager.NavigateTo($"/book-space/{spaceId}");
+    }
 }
