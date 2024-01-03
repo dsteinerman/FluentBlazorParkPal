@@ -68,15 +68,15 @@ namespace FluentBlazorAuthTest.Data
         /// <summary>
         /// Indicates whether the space is available for public booking.
         /// </summary>
-        public bool IsPublic { get; set; }
+        public bool IsPublic { get; set; } 
 
         /// <summary>
         /// Indicates whether the space is vacant and available to book.
-        /// This field is independent of <see cref="Space.IsPublic"/>
+        /// This field is independent of <see ///cref="///Space.IsPublic"/>
         /// </summary>
         public bool IsVacant { get; set; } = true;
 
-        public bool IsAvailable { get; set; } = false;
+        public bool IsAvailable { get; set; } = true;
 
 
         /// <summary>

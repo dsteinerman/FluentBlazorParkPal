@@ -72,11 +72,10 @@
                 <br/>
                 @* IsPublic CheckBox *@
                 <FluentCard>
-                    <FluentCheckbox bind-Value="@NewSpace.IsPublic"
+                    <FluentCheckbox @onchange="HandleCheckboxChange"
                                     id="ispublic"
-                                    bind-CheckState="@NewSpace.IsPublic"
-                                    Label="I want this Space to be public and available upon submission."/>
-                    <ValidationMessage For="() => NewSpace.IsPublic" class="text-danger"/>
+                                    Label="I want this Space to be public and available upon submission." />
+                    <ValidationMessage For="() => NewSpace.IsPublic" class="text-danger" />
                 </FluentCard>
                 <br/>
                 <FluentButton 
@@ -176,5 +175,9 @@
 
         [Required]
         public bool IsPublic { get; set; }
+    }
+    private void HandleCheckboxChange(ChangeEventArgs e)
+    {
+        NewSpace.IsPublic = true;
     }
 }
