@@ -1,113 +1,56 @@
 ﻿@page "/Book"
 
 <link rel="stylesheet" href="/HTML/CSS/Styles.css" />
-
-@rendermode InteractiveServer
-
 @using FluentBlazorAuthTest.Data
 @using FluentBlazorAuthTest.Data.Services
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Identity
-@using Microsoft.EntityFrameworkCore
 @using System.Security.Claims
-
-@using System.Threading.Tasks;
-@using Newtonsoft.Json.Linq;
-
 @attribute [Authorize]
 
-
 @inject UserManager<ApplicationUser> UserManager
-@inject ApplicationDbContext DbContext
-@inject NavigationManager NavigationManager
-
 @inject IBookingService BookingService
 @inject ISpaceService SpaceService
 @inject AuthenticationStateProvider AuthenticationStateProvider
+@inject NavigationManager NavigationManager
 
-<link rel="stylesheet" href="/HTML/CSS/Styles.css" />
+<PageTitle>My Bookings</PageTitle>
 
-<!-- The main section for displaying bookings -->
-
-@if (bookings != null)
+@if (bookings != null && bookings.Any())
 {
-    bool displayMessage = true;
-    foreach (var booking in bookings)
-    {
-        if (user.IsInRole("Admin") || booking.ClientUserId == currentUser.Id)
-        {
-            <main class="bookings-page-content">
-                <section class="booking-management">
-                    <div class="bookings-list">
-                        <div class="booking-item">
-                        @if (spaceDetailsForBookings.TryGetValue(booking.SpaceId, out var space))
-                        {
-                            <h3 class="space-address">Address: @space.Address</h3>
-                        }
-                            <p class="booking-details">Location: @booking</p>
-                            <p class="booking-details">Car Type: @booking</p>
-                            <p class="booking-details">Dates: @booking</p>
-                            <p class="booking-details">Status: @booking</p>
-
-                            <p class="booking-details">Total Price: @booking.Price</p>
-                            <div class="booking-actions">
-                                <button class="modify-btn">Modify</button>
-                                <button class="cancel-btn">Cancel</button>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-            </main>
-        }
-    }
-    if (displayMessage)
-    {
-        <p><em>You dont have any current bookings, why not search for one? </em></p>
-        <FluentButton Appearance="Appearance.Accent" @onclick="@(() => Search())">Search</FluentButton>
-    }
+    DisplaySections();
 }
-
+else
+{
+    <p><em>You don't have any bookings. Why not search for one?</em></p>
+    <FluentButton Appearance="Appearance.Accent" @onclick="Search">Search</FluentButton>
+}
 
 @code {
     private IEnumerable<Booking> bookings;
-    private Dictionary<string, Space> spaceDetailsForBookings = new Dictionary<string, Space>(); // Class level variable
-
-    private IEnumerable<Space> spaces;
-
-
+    private Dictionary<string, Space> spaceDetailsForBookings = new Dictionary<string, Space>();
     private ApplicationUser currentUser;
     private ClaimsPrincipal user;
 
-
-    public Booking CurrentBooking { get; set; } = new();
-
     protected override async Task OnInitializedAsync()
     {
-    await InitializeUserAsync();
-    await LoadDataAsync();
-
+        await InitializeUserAsync();
+        await LoadDataAsync();
     }
-
     private async Task InitializeUserAsync()
     {
         var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
-        user = authState.User; // Store the user in the property
+        user = authState.User;
 
         if (user.Identity.IsAuthenticated)
         {
             var userId = UserManager.GetUserId(user);
             currentUser = await UserManager.FindByIdAsync(userId);
         }
-
     }
     private async Task LoadDataAsync()
     {
-        // Assuming userId is needed for these methods
-       // var userId = UserManager.GetUserId(user);
         bookings = await BookingService.GetAllBookingsAsync();
-
-
-        // Initialize or clear the dictionary
         spaceDetailsForBookings.Clear();
 
         foreach (var booking in bookings)
@@ -121,18 +64,55 @@
                 }
             }
         }
-
-        //hostedSpaces = await SpaceService.GetSpacesByHostIdAsync(userId);
-
-        //foreach (var space in hostedSpaces)
-        //{
-        //    var bookingsForSpace = await BookingService.GetBookingsBySpaceIdAsync(space.Id);
-        //    spaceBookings[space.Id] = bookingsForSpace;
-        //}
     }
+
     void Search() => NavigationManager.NavigateTo("/spaces/search");
-
-  
-   
 }
+@{
+    void DisplaySections()
+    {
+        DisplaySection("Current Bookings", bookings.Where(b => b.IsActive && b.EndDateTime > DateTime.Now && b.PaymentStatus != PaymentStatus.Unpaid));
+        DisplaySection("Pending Bookings", bookings.Where(b => b.PaymentStatus == PaymentStatus.Unpaid));
+        DisplaySection("Past Bookings", bookings.Where(b => b.EndDateTime <= DateTime.Now));
+    }
 
+    void DisplaySection(string title, IEnumerable<Booking> filteredBookings)
+    {
+        <div class="pagination-container">
+            <h1>@title</h1>
+        </div>
+        <FluentDivider Role="DividerRole.Separator"></FluentDivider>
+
+        if (filteredBookings.Any())
+        {
+            foreach (var booking in filteredBookings)
+            {
+                if (user.IsInRole("Admin") || booking.ClientUserId == currentUser.Id)
+                {
+                    <main class="bookings-page-content">
+                        <section class="booking-management">
+                            <div class="bookings-list">
+                                <div class="booking-item">
+                                    @if (spaceDetailsForBookings.TryGetValue(booking.SpaceId, out var space))
+                                    {
+                                        <h3 class="space-address">Address: @space.Address</h3>
+                                    }
+                                    <p class="booking-details">Booking Info: @booking</p> <!-- Replace with actual property -->
+                                    <p class="booking-details">Total Price: @booking.Price.ToString("C")</p>
+                                    <div class="booking-actions">
+                                        <button class="modify-btn">Modify</button>
+                                        <button class="cancel-btn">Cancel</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+                    </main>
+                }
+            }
+        }
+        else
+        {
+            <p><em>No bookings in this category.</em></p>
+        }
+    }
+}
