@@ -129,7 +129,7 @@ else
         }
 
     }
-   
+
     protected override async Task OnInitializedAsync()
     {
         if (Id is not null)
@@ -151,8 +151,13 @@ else
 
     async Task HandleSubmit()
     {
-        // Update AdminNotes with TotalAmountDue for all users
-        CurrentBooking.AdminNotes = $"Total Amount Due: {TotalAmountDue.ToString("C")}";
+
+        CurrentBooking.Price = CalculateTotalAmountDue();
+        CurrentBooking.StartDateTime = StartDate;
+        CurrentBooking.EndDateTime = EndDate;
+
+        CurrentBooking.IsActive = DateTime.Now.Date < EndDate;
+
 
         if (IsExistingBooking)
         {
@@ -160,6 +165,10 @@ else
         }
         else
         {
+            CurrentBooking.PaymentStatus = PaymentStatus.Unpaid;
+            CurrentBooking.BookingStatus = BookingStatus.Pending;
+            CurrentSpace.IsAvailable = false;
+            CurrentSpace.IsVacant = false;
             await BookingService.AddBookingAsync(CurrentBooking);
         }
 
