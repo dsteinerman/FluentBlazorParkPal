@@ -1,4 +1,6 @@
 ﻿
+using static FluentBlazorAuthTest.Components.Pages.Book;
+
 namespace FluentBlazorAuthTest.Data.Services;
 
 public interface IBookingService
@@ -23,6 +25,8 @@ public interface IBookingService
 
     Task DeleteBookingAsync(string Id);
 
+    Task CancelBookingAsync(string Id);
+
     Task AddBookingAsync(Booking booking);
 
     Task UpdateBookingPriceBasedOnSpace(string bookingId);
@@ -32,5 +36,8 @@ public interface IBookingService
     Task UpdatePaymentStatusPaidByIdAsync(string bookingId, BookingStatus bookingstatus);
 
     Task<IEnumerable<Booking>> GetBookingsBySpaceIdAsync(string spaceId);
+
+    Task<(IEnumerable<Booking>, int)> GetBookingPageAsync(int pageNumber, int pageSize);
+
 
 }

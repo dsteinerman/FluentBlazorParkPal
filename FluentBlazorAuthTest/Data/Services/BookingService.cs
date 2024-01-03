@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using static FluentBlazorAuthTest.Components.Pages.Book;
 
 namespace FluentBlazorAuthTest.Data.Services
 {
@@ -78,6 +79,8 @@ namespace FluentBlazorAuthTest.Data.Services
                 dbBooking.CustomerNotes = booking.CustomerNotes;
                 dbBooking.Price = booking.Price;
                 dbBooking.PaymentStatus = booking.PaymentStatus;
+                dbBooking.IsActive = booking.IsActive;
+                dbBooking.SpaceId = booking.SpaceId;
 
                 await _context.SaveChangesAsync();
 
@@ -109,5 +112,44 @@ namespace FluentBlazorAuthTest.Data.Services
             await _context.SaveChangesAsync();
         }
 
+        public async Task<(IEnumerable<Booking>, int)> GetBookingPageAsync(int pageNumber, int pageSize)
+        {
+            var query = _context.Bookings.AsQueryable();
+
+            // Filter the query to include only public spaces
+            //var query = _context.Bookings.Where(s => s.IsPublic).AsQueryable();
+
+            int totalBookings = await query.CountAsync();
+
+            var bookings = await query
+                .OrderBy(s => s.StartDateTime) //order
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return (bookings, totalBookings);
+        }
+
+        public async Task CancelBookingAsync(string Id)
+        {
+
+            var booking = await GetBookingByIdAsync(Id);
+
+            booking.IsActive = false;
+
+            await UpdateBookingAsync(booking, Id);
+
+            // Retrieve the associated space
+            var space = await _spaceService.GetSpaceByIdAsync((string)booking.SpaceId);
+            if (space != null)
+            {
+                space.IsAvailable = true;
+
+                await _spaceService.UpdateSpaceAsync(space, Id);
+            }
+
+
+
+        }
     }
 }

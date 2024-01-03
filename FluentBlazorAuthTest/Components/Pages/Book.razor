@@ -6,13 +6,19 @@
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Identity
 @using System.Security.Claims
+@using Microsoft.EntityFrameworkCore
 @attribute [Authorize]
 
 @inject UserManager<ApplicationUser> UserManager
 @inject IBookingService BookingService
 @inject ISpaceService SpaceService
+@inject ApplicationDbContext DbContext
+
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject NavigationManager NavigationManager
+
+@rendermode InteractiveServer
+
 
 <PageTitle>My Bookings</PageTitle>
 
@@ -28,15 +34,32 @@ else
 
 @code {
     private IEnumerable<Booking> bookings;
-    private Dictionary<string, Space> spaceDetailsForBookings = new Dictionary<string, Space>();
     private ApplicationUser currentUser;
     private ClaimsPrincipal user;
+
+    private int totalBookings;
+    private int currentPage = 1;
+    private const int pageSize = 2;
+    private int totalPages => (int)Math.Ceiling((double)totalBookings / pageSize);
+
+    private Dictionary<string, Space> spaceDetailsForBookings = new Dictionary<string, Space>();
+
+
 
     protected override async Task OnInitializedAsync()
     {
         await InitializeUserAsync();
-        await LoadDataAsync();
+        await LoadBookings();
+        await LoadDataSpacesAsync();
+
     }
+
+private async Task LoadBookings()
+{
+    bookings = await BookingService.GetAllBookingsAsync();
+        (bookings, totalBookings) = await BookingService.GetBookingPageAsync(currentPage, pageSize);
+}
+
     private async Task InitializeUserAsync()
     {
         var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
@@ -48,21 +71,83 @@ else
             currentUser = await UserManager.FindByIdAsync(userId);
         }
     }
-    private async Task LoadDataAsync()
-    {
-        bookings = await BookingService.GetAllBookingsAsync();
-        spaceDetailsForBookings.Clear();
+    private async Task LoadDataSpacesAsync()
+{
+    spaceDetailsForBookings.Clear();
 
-        foreach (var booking in bookings)
+    foreach (var booking in bookings)
+    {
+        if (!spaceDetailsForBookings.ContainsKey(booking.SpaceId))
         {
-            if (!spaceDetailsForBookings.ContainsKey(booking.SpaceId))
+            Space space = await SpaceService.GetSpaceByIdAsync(booking.SpaceId);
+            if (space != null)
             {
-                Space space = await SpaceService.GetSpaceByIdAsync(booking.SpaceId);
-                if (space != null)
-                {
-                    spaceDetailsForBookings[booking.SpaceId] = space;
-                }
+                spaceDetailsForBookings[booking.SpaceId] = space;
             }
+        }
+    }
+}
+    private void EditBooking(string Id)
+    {
+        NavigationManager.NavigateTo($"/edit-booking/{Id}");
+    }
+    private async Task CancelBooking(string Id)
+{
+    await BookingService.CancelBookingAsync(Id);
+    bookings = await BookingService.GetAllBookingsAsync();
+
+    NavigationManager.NavigateTo("/Book/");
+}
+public async Task PayForBooking(string bookingId)
+    {
+        var booking = await DbContext.Bookings.FindAsync(bookingId);
+
+        if (booking != null)
+        {
+            booking.PaymentStatus = PaymentStatus.Paid;
+
+            if (booking.Space != null)
+            {
+                booking.Space.LatestTransaction = DateTime.UtcNow;
+                DbContext.Spaces.Update(booking.Space); 
+            }
+
+            await DbContext.SaveChangesAsync();
+
+            NavigationManager.NavigateTo("/Book/");
+        }
+    }
+    public async Task DeleteBooking(string Id)
+    {
+        var bookingToDelete = await DbContext.Bookings.FindAsync(Id);
+
+        if (bookingToDelete != null)
+        {
+            DbContext.Bookings.Remove(bookingToDelete);
+
+            await DbContext.SaveChangesAsync();
+
+            NavigationManager.NavigateTo("/Book/");
+
+
+        }
+    }
+
+    private async Task NextPage()
+    {
+        if (currentPage < totalPages)
+        {
+            currentPage++;
+            await LoadBookings();
+        }
+    }
+
+    private async Task PreviousPage()
+    {
+        if (currentPage > 1)
+        {
+            currentPage--;
+            await LoadBookings();
         }
     }
 
@@ -71,44 +156,70 @@ else
 @{
     void DisplaySections()
     {
-        DisplaySection("Current Bookings", bookings.Where(b => b.IsActive && b.EndDateTime > DateTime.Now && b.PaymentStatus != PaymentStatus.Unpaid));
         DisplaySection("Pending Bookings", bookings.Where(b => b.PaymentStatus == PaymentStatus.Unpaid));
-        DisplaySection("Past Bookings", bookings.Where(b => b.EndDateTime <= DateTime.Now));
+        DisplaySection("Current Bookings", bookings.Where(b => b.IsActive && b.EndDateTime > DateTime.Now && b.PaymentStatus != PaymentStatus.Unpaid));
+        DisplaySection("Past Bookings", bookings.Where(b => b.EndDateTime <= DateTime.Now || !b.IsActive));
     }
 
-    void DisplaySection(string title, IEnumerable<Booking> filteredBookings)
+    void DisplaySection(string title, IEnumerable<Booking> bookings)
     {
         <div class="pagination-container">
             <h1>@title</h1>
         </div>
         <FluentDivider Role="DividerRole.Separator"></FluentDivider>
 
-        if (filteredBookings.Any())
+        if (bookings.Any())
         {
-            foreach (var booking in filteredBookings)
+            foreach (var booking in bookings)
             {
+                <FluentSpacer Width="25"></FluentSpacer>
+
                 if (user.IsInRole("Admin") || booking.ClientUserId == currentUser.Id)
                 {
+                <div class="pagination-container">
+                <FluentCard Width="80%">
+
                     <main class="bookings-page-content">
                         <section class="booking-management">
                             <div class="bookings-list">
                                 <div class="booking-item">
                                     @if (spaceDetailsForBookings.TryGetValue(booking.SpaceId, out var space))
                                     {
-                                        <h3 class="space-address">Address: @space.Address</h3>
+                                        <h3 class="space-address">@space.Address</h3>
                                     }
                                     <p class="booking-details">Booking Info: @booking</p> <!-- Replace with actual property -->
                                     <p class="booking-details">Total Price: @booking.Price.ToString("C")</p>
+                                    <p>Payment Status: @booking.PaymentStatus.ToString()</p>
+
                                     <div class="booking-actions">
-                                        <button class="modify-btn">Modify</button>
-                                        <button class="cancel-btn">Cancel</button>
+                                        <FluentButton OnClick="@(() => EditBooking(@booking.Id))">Edit</FluentButton>
+
+                                        <FluentButton OnClick="@(() => CancelBooking(@booking.Id))">Cancel</FluentButton>
+                                        @if (booking.PaymentStatus != PaymentStatus.Paid)
+                                            {
+                                                <FluentButton Appearance="Appearance.Accent" @onclick="@(() => PayForBooking(booking.Id))">Pay Now</FluentButton>
+                                            }
+                                        @if (user != null && user.IsInRole("Admin"))
+                                        {
+                                            <FluentButton Appearance="Appearance.Lightweight" Color="Red" @onclick="@(() => DeleteBooking(booking.Id))">Delete</FluentButton>
+                                        }
                                     </div>
                                 </div>
                             </div>
-                        </section>
+                        </section
                     </main>
+                    </FluentCard>
+
+                    </div>
+                    <FluentSpacer Width="25"></FluentSpacer>
+
                 }
             }
+            <div class="pagination-container">
+                    <FluentButton Disabled="@(currentPage <= 1)" OnClick="PreviousPage">Previous</FluentButton>
+                    <span> Page @currentPage of @totalPages </span>
+                    <FluentButton Disabled="@(currentPage >= totalPages)" OnClick="NextPage">Next</FluentButton>
+                     </div>
         }
         else
         {

@@ -57,6 +57,11 @@ namespace FluentBlazorAuthTest.Data.Services
                 dbSpace.Latitude = space.Latitude;
                 dbSpace.Price = space.Price;
                 dbSpace.Description = space.Description;
+                dbSpace.Address = space.Address;
+                dbSpace.Id = space.Id;
+                dbSpace.IsAvailable = space.IsAvailable;
+                dbSpace.IsPublic = space.IsPublic;
+                dbSpace.IsVacant = space.IsVacant;
 
                 await _context.SaveChangesAsync();
             }
