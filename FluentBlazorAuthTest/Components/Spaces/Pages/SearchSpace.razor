@@ -106,8 +106,9 @@ else
 
     private async Task LoadSpaces()
     {
+        var includePrivateSpaces = user.IsInRole("Admin");
         spaces = await SpaceService.GetAllSpacesAsync();
-        (spaces, totalSpaces) = await SpaceService.GetSpacesPageAsync(currentPage, pageSize);
+        (spaces, totalSpaces) = await SpaceService.GetSpacesPageAsync(currentPage, pageSize, includePrivateSpaces);
 
     }
     

@@ -81,23 +81,37 @@ namespace FluentBlazorAuthTest.Data.Services
                         .ToListAsync();
         }
 
-        public async Task<(IEnumerable<Space>, int)> GetSpacesPageAsync(int pageNumber, int pageSize)
-        {
+        //public async Task<(IEnumerable<Space>, int)> GetSpacesPageAsync(int pageNumber, int pageSize)
+        //{
             //var query = _context.Spaces.AsQueryable();
 
             // Filter the query to include only public spaces
-            var query = _context.Spaces.Where(s => s.IsPublic).AsQueryable();
+            //var query = _context.Spaces.Where(s => s.IsPublic).AsQueryable();
 
-            int totalSpaces = await query.CountAsync();
+            //int totalSpaces = await query.CountAsync();
 
-            var spaces = await query
-                .OrderBy(s => s.DateCreated) //order
-                .Skip((pageNumber - 1) * pageSize)
-                .Take(pageSize)
-                .ToListAsync();
+            //var spaces = await query
+            //    .OrderBy(s => s.DateCreated) //order
+            //    .Skip((pageNumber - 1) * pageSize)
+            //    .Take(pageSize)
+            //    .ToListAsync();
+
+            //return (spaces, totalSpaces);
+        //}
+
+        public async Task<(IEnumerable<Space>, int)> GetSpacesPageAsync(int pageNumber, int pageSize, bool includeNonPublicSpaces)
+        {
+            var query = _context.Spaces.AsQueryable();
+
+            if (!includeNonPublicSpaces)
+            {
+                query = query.Where(space => space.IsPublic);
+            }
+
+            var totalSpaces = await query.CountAsync();
+            var spaces = await query.Skip((pageNumber - 1) * pageSize).Take(pageSize).ToListAsync();
 
             return (spaces, totalSpaces);
         }
-
     }
 }

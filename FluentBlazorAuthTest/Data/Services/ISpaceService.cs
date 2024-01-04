@@ -29,7 +29,7 @@ public interface ISpaceService
 
     Task<decimal> GetSpacePriceByIdAsync(string spaceId);
 
-    Task<(IEnumerable<Space>, int)> GetSpacesPageAsync(int pageNumber, int pageSize);
+    Task<(IEnumerable<Space>, int)> GetSpacesPageAsync(int pageNumber, int pageSize, bool includeNonPublicSpaces);
 
 
 }
