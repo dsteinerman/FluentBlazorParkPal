@@ -27,7 +27,7 @@
 @inject ISpaceService SpaceService
 @inject AuthenticationStateProvider AuthenticationStateProvider
 
-
+<PageTitle>My Hosted Spaces</PageTitle>
 
 
 <div class="pagination-container">
@@ -54,9 +54,6 @@
                 <p>Description: @space.Description</p>
                 <p>Public Status: @space.IsPublic </p>
                 <p>Booking Status: @(space.IsAvailable ? "Available to book" : (currentBooking != null ? $"Booked until {currentBooking.EndDateTime.ToShortDateString()}" : "Currently booked"))</p>
-
-
-                <p>Revenue:  </p>
 
                 @if (user != null && user.IsInRole("Admin"))
                 {

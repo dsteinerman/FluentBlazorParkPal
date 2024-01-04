@@ -22,6 +22,10 @@
 @attribute [Authorize]
 
 @rendermode InteractiveServer
+
+<PageTitle>Search for a Space</PageTitle>
+
+
 <div class="pagination-container">
 <h1>Search for a Space</h1>
 </div>
@@ -42,7 +46,6 @@
         <p>Size: @space.Size.ToString()</p>
         <p>Price: $@space.Price Per Day</p>
         <p>Description: @space.Description</p>
-        <p>Vacant Status: @space.IsVacant</p>
         <p>Public Status: @space.IsPublic </p>
 
                 @if (space.IsAvailable && (space.HostId != user?.FindFirst(c => c.Type == ClaimTypes.NameIdentifier)?.Value))

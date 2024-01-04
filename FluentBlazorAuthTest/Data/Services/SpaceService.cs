@@ -81,23 +81,6 @@ namespace FluentBlazorAuthTest.Data.Services
                         .ToListAsync();
         }
 
-        //public async Task<(IEnumerable<Space>, int)> GetSpacesPageAsync(int pageNumber, int pageSize)
-        //{
-            //var query = _context.Spaces.AsQueryable();
-
-            // Filter the query to include only public spaces
-            //var query = _context.Spaces.Where(s => s.IsPublic).AsQueryable();
-
-            //int totalSpaces = await query.CountAsync();
-
-            //var spaces = await query
-            //    .OrderBy(s => s.DateCreated) //order
-            //    .Skip((pageNumber - 1) * pageSize)
-            //    .Take(pageSize)
-            //    .ToListAsync();
-
-            //return (spaces, totalSpaces);
-        //}
 
         public async Task<(IEnumerable<Space>, int)> GetSpacesPageAsync(int pageNumber, int pageSize, bool includeNonPublicSpaces)
         {
