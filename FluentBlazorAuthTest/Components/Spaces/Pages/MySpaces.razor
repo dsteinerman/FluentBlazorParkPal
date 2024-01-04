@@ -42,7 +42,7 @@
 
     foreach (var space in hostedSpaces)
     {
-        var currentBooking = bookings.FirstOrDefault(b => b.SpaceId == space.Id && b.EndDateTime >= DateTime.Now);
+        var currentBooking = bookings.FirstOrDefault(b => b.SpaceId == space.Id && b.EndDateTime >= DateTime.Now && space.HostId != null);
         <FluentSpacer Width="25"></FluentSpacer>
 
         <div class="pagination-container">
@@ -62,13 +62,14 @@
                 {
                     <p>Host Id: @(space.HostId ?? "Unavailable")</p>
 
-                    //<FluentButton OnClick="@(() => BookNow(space.Id))">Book Now</FluentButton>
                     <FluentButton Appearance="Appearance.Accent" @onclick="@(() => EditSpace(space.Id))">Edit Space</FluentButton>
                     <FluentButton Appearance="Appearance.Lightweight" Color="Red" @onclick="@(() => DeleteSpace(space.Id))">Delete</FluentButton>
 
                 }
                 @if (space.IsAvailable && !user.IsInRole("Admin"))
                 {
+                    <FluentButton Appearance="Appearance.Lightweight" Color="Red" @onclick="@(() => DeleteSpace(space.Id))">Delete</FluentButton>
+
                     <FluentButton Appearance="Appearance.Accent" @onclick="@(() => EditSpace(space.Id))">Edit Space</FluentButton>
                 }
                 <FluentButton @onclick="@(() => TogglePublicAvailability(space.Id))">@(space.IsPublic ? "Make Listing Private" : "Make Listing Public")</FluentButton>
