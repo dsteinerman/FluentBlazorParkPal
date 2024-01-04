@@ -209,14 +209,14 @@ public async Task PayForBooking(string bookingId)
                                         <div class="booking-actions">
                                             @if (booking.IsActive)
                                             {
-                                                if (booking.PaymentStatus == PaymentStatus.Unpaid)
+                                                if (booking.PaymentStatus == PaymentStatus.Unpaid && booking.EndDateTime >= DateTime.Now)
                                                 {
                                                     <FluentButton OnClick="@(() => EditBooking(@booking.SpaceId))">Edit</FluentButton>
                                                 }
 
                                                 <FluentButton OnClick="@(() => CancelBooking(@booking.Id))">Cancel</FluentButton>
 
-                                                @if (booking.PaymentStatus != PaymentStatus.Paid && booking.BookingStatus == BookingStatus.Pending)
+                                                @if (booking.PaymentStatus != PaymentStatus.Paid && booking.BookingStatus == BookingStatus.Pending && booking.EndDateTime >= DateTime.Now)
                                                 {
                                                     //<FluentButton OnClick="@(() => EditBooking(@booking.SpaceId))">Edit</FluentButton>
                                                     <FluentButton Appearance="Appearance.Accent" @onclick="@(() => PayForBooking(booking.Id))">Pay Now</FluentButton>
