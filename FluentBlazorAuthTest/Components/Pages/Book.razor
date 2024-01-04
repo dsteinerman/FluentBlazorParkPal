@@ -36,11 +36,7 @@ else
     private IEnumerable<Booking> bookings;
     private ApplicationUser currentUser;
     private ClaimsPrincipal user;
-
-    private int totalBookings;
-    private int currentPage = 1;
-    private const int pageSize = 2;
-    private int totalPages => (int)Math.Ceiling((double)totalBookings / pageSize);
+  
 
     private Dictionary<string, Space> spaceDetailsForBookings = new Dictionary<string, Space>();
 
@@ -53,25 +49,20 @@ else
         await LoadDataSpacesAsync();
 
     }
-
-private async Task LoadBookings()
-{
-    var allBookings = await BookingService.GetAllBookingsAsync();
-    var filteredBookings = FilterBookingsForUser(allBookings);
-
-    totalBookings = filteredBookings.Count();
-    bookings = ApplyPagination(filteredBookings, currentPage, pageSize);
-}
-
-private IEnumerable<Booking> FilterBookingsForUser(IEnumerable<Booking> allBookings)
-{
-    return allBookings.Where(b => user.IsInRole("Admin") || b.ClientUserId == currentUser.Id);
-}
-
-private IEnumerable<Booking> ApplyPagination(IEnumerable<Booking> bookings, int page, int pageSize)
-{
-    return bookings.Skip((page - 1) * pageSize).Take(pageSize);
-}
+    private async Task LoadBookings()
+    {
+        try
+        {
+            bookings = await BookingService.GetAllBookingsAsync();
+        }
+        catch (Exception ex)
+        {
+        }
+        finally
+        {
+            StateHasChanged();
+        }
+    }
 
     private async Task InitializeUserAsync()
     {
@@ -104,6 +95,30 @@ private IEnumerable<Booking> ApplyPagination(IEnumerable<Booking> bookings, int 
     private void EditBooking(string Id)
     {
         NavigationManager.NavigateTo($"/edit-booking/{Id}");
+
+    }
+    public async Task DeleteBooking(string Id)
+    {
+        var bookingToDelete = await DbContext.Bookings.FindAsync(Id);
+
+        if (bookingToDelete != null)
+        {
+            var spaceToUpdate = await DbContext.Spaces.FindAsync(bookingToDelete.SpaceId);
+            if (spaceToUpdate != null)
+            {
+                spaceToUpdate.IsAvailable = true;
+                DbContext.Spaces.Update(spaceToUpdate);
+            }
+            DbContext.Bookings.Remove(bookingToDelete);
+
+            await DbContext.SaveChangesAsync();
+            await LoadBookings();
+            StateHasChanged();
+
+            NavigationManager.NavigateTo("/Book/");
+
+
+        }
     }
     private async Task CancelBooking(string Id)
 {
@@ -147,39 +162,6 @@ public async Task PayForBooking(string bookingId)
             NavigationManager.NavigateTo("/Book/");
         }
     }
-    public async Task DeleteBooking(string Id)
-    {
-        var bookingToDelete = await DbContext.Bookings.FindAsync(Id);
-
-        if (bookingToDelete != null)
-        {
-            DbContext.Bookings.Remove(bookingToDelete);
-
-            await DbContext.SaveChangesAsync();
-
-            NavigationManager.NavigateTo("/Book/");
-
-
-        }
-    }
-
-    private async Task NextPage()
-    {
-        if (currentPage < totalPages)
-        {
-            currentPage++;
-            await LoadBookings();
-        }
-    }
-
-    private async Task PreviousPage()
-    {
-        if (currentPage > 1)
-        {
-            currentPage--;
-            await LoadBookings();
-        }
-    }
     
     void Search() => NavigationManager.NavigateTo("/spaces/search");
 }
@@ -191,69 +173,67 @@ public async Task PayForBooking(string bookingId)
         DisplaySection("Past Bookings", bookings.Where(b => b.EndDateTime <= DateTime.Now || !b.IsActive));
     }
 
-    void DisplaySection(string title, IEnumerable<Booking> bookings)
+    void DisplaySection(string title, IEnumerable<Booking> sectionBookings)
     {
         <div class="pagination-container">
             <h1>@title</h1>
         </div>
         <FluentDivider Role="DividerRole.Separator"></FluentDivider>
 
-        if (bookings.Any())
+        if (sectionBookings.Any())
         {
-            bool displayMessage = true;
-            foreach (var booking in bookings)
+            foreach (var booking in sectionBookings)
             {
                 <FluentSpacer Width="25"></FluentSpacer>
 
                 if (user.IsInRole("Admin") || booking.ClientUserId == currentUser.Id)
                 {
-                 displayMessage = false;
-                <div class="pagination-container">
-                <FluentCard Width="80%">
-
-                    <main class="bookings-page-content">
-                        <section class="booking-management">
-                            <div class="bookings-list">
-                                <div class="booking-item">
-                                    @if (spaceDetailsForBookings.TryGetValue(booking.SpaceId, out var space))
-                                    {
-                                        <h3 class="space-address">@space.Address</h3>
-                                         <p class="booking-details">Booking Id: @booking.Id</p>
-                                         <p class="booking-details">Total Price: @booking.Price.ToString("C")</p>
-                                         <p class="booking-details">Payment Status: @booking.PaymentStatus.ToString()</p>
-                                         <p class="booking-details"> Active Status: @booking.IsActive </p>
-                                         <p class="booking-details"> Is Available: @space.IsAvailable </p>
-                                          <p class="booking-details"> </p>
-                                    }
-                                </div>
-                                <div class="booking-actions">
-                                        <FluentButton OnClick="@(() => EditBooking(@booking.SpaceId))">Edit</FluentButton>
-
-                                        <FluentButton OnClick="@(() => CancelBooking(@booking.Id))">Cancel</FluentButton>
-                                        @if (booking.PaymentStatus != PaymentStatus.Paid)
+                    <div class="pagination-container">
+                        <FluentCard Width="80%">
+                            <main class="bookings-page-content">
+                                <section class="booking-management">
+                                    <div class="bookings-list">
+                                        <div class="booking-item">
+                                            @if (spaceDetailsForBookings.TryGetValue(booking.SpaceId, out var space))
                                             {
-                                                <FluentButton Appearance="Appearance.Accent" @onclick="@(() => PayForBooking(booking.Id))">Pay Now</FluentButton>
+                                                <h3 class="space-address">@space.Address</h3>
+                                                <p class="booking-details">Booking Id: @booking.Id</p>
+                                                <p class="booking-details">Total Price: @booking.Price.ToString("C")</p>
+                                                <p class="booking-details">Payment Status: @booking.PaymentStatus.ToString()</p>
+                                                <p class="booking-details">Active Status: @booking.IsActive</p>
+                                                <p class="booking-details">Is Available: @space.IsAvailable</p>
                                             }
-                                        @if (user != null && user.IsInRole("Admin"))
-                                        {
-                                            <FluentButton Appearance="Appearance.Lightweight" Color="Red" @onclick="@(() => DeleteBooking(booking.Id))">Delete</FluentButton>
-                                        }
-                                    </div>
-                            </div>
-                        </section
-                    </main>
-                    </FluentCard>
+                                        </div>
+                                        <div class="booking-actions">
+                                            @if (booking.IsActive)
+                                            {
+                                                if (booking.PaymentStatus == PaymentStatus.Unpaid)
+                                                {
+                                                    <FluentButton OnClick="@(() => EditBooking(@booking.SpaceId))">Edit</FluentButton>
+                                                }
 
+                                                <FluentButton OnClick="@(() => CancelBooking(@booking.Id))">Cancel</FluentButton>
+
+                                                @if (booking.PaymentStatus != PaymentStatus.Paid && booking.BookingStatus == BookingStatus.Pending)
+                                                {
+                                                    //<FluentButton OnClick="@(() => EditBooking(@booking.SpaceId))">Edit</FluentButton>
+                                                    <FluentButton Appearance="Appearance.Accent" @onclick="@(() => PayForBooking(booking.Id))">Pay Now</FluentButton>
+                                                }
+                                            }
+
+                                            @if (user != null && user.IsInRole("Admin"))
+                                            {
+                                                <FluentButton Appearance="Appearance.Lightweight" Color="Red" @onclick="@(() => DeleteBooking(booking.Id))">Delete</FluentButton>
+                                            }
+                                        </div>
+                                    </div>
+                                </section>
+                            </main>
+                        </FluentCard>
                     </div>
                     <FluentSpacer Width="25"></FluentSpacer>
-
                 }
             }
-            <div class="pagination-container">
-                    <FluentButton Disabled="@(currentPage <= 1)" OnClick="PreviousPage">Previous</FluentButton>
-                    <span> Page @currentPage of @totalPages </span>
-                    <FluentButton Disabled="@(currentPage >= totalPages)" OnClick="NextPage">Next</FluentButton>
-                     </div>
         }
         else
         {
@@ -261,3 +241,4 @@ public async Task PayForBooking(string bookingId)
         }
     }
 }
+

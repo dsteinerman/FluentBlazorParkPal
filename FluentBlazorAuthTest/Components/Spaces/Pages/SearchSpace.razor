@@ -45,22 +45,7 @@
         <p>Vacant Status: @space.IsVacant</p>
         <p>Public Status: @space.IsPublic </p>
 
-            @if (user != null && user.IsInRole("Admin"))
-            {
-                if (space.IsAvailable)
-                {
-                    <p>Availability: You are an Admin you can Book anything</p>
-                    <FluentButton OnClick="@(() => BookNow(space.Id))">Book Now</FluentButton>
-                }
-                else
-                {
-                    <p>Availability: Unavailable</p>
-                }
-
-                <FluentButton Appearance="Appearance.Lightweight" Color="Red" @onclick="@(() => DeleteSpace(space.Id))">Delete</FluentButton>
-                <FluentButton Appearance="Appearance.Accent" @onclick="@(() => EditSpace(space.Id))">Edit Space</FluentButton>
-            }
-            else if (space.IsAvailable && (space.HostId != user?.FindFirst(c => c.Type == ClaimTypes.NameIdentifier)?.Value))
+                @if (space.IsAvailable && (space.HostId != user?.FindFirst(c => c.Type == ClaimTypes.NameIdentifier)?.Value) && !user.IsInRole("Admin"))
             {
                 <p>Availability: Available to book</p>
                 <FluentButton OnClick="@(() => BookNow(space.Id))">Book Now</FluentButton>
@@ -74,6 +59,14 @@
             {
                 <p>Availability: Unavailable</p>
             }
+
+                @if (user != null && user.IsInRole("Admin"))
+                {
+                    <FluentButton OnClick="@(() => BookNow(space.Id))">Book Now</FluentButton>
+                    <FluentButton Appearance="Appearance.Accent" @onclick="@(() => EditSpace(space.Id))">Edit Space</FluentButton>
+                    <FluentButton Appearance="Appearance.Lightweight" Color="Red" @onclick="@(() => DeleteSpace(space.Id))">Delete</FluentButton>
+
+                }
 
     </FluentCard>
      </div>
