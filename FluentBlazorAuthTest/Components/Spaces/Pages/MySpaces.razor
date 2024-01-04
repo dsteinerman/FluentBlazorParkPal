@@ -1,0 +1,168 @@
+﻿
+@page "/MySpaces/"
+
+@rendermode InteractiveServer
+<link rel="stylesheet" href="/HTML/CSS/Styles.css" />
+
+
+@using FluentBlazorAuthTest.Data
+@using FluentBlazorAuthTest.Data.Services
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.EntityFrameworkCore
+@using System.Security.Claims
+
+@using System.Threading.Tasks;
+@using Microsoft.IdentityModel.Tokens
+@using Newtonsoft.Json.Linq;
+
+@attribute [Authorize]
+
+
+@inject UserManager<ApplicationUser> UserManager
+@inject ApplicationDbContext DbContext
+@inject NavigationManager NavigationManager
+
+@inject IBookingService BookingService
+@inject ISpaceService SpaceService
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+
+
+
+<div class="pagination-container">
+    <h1>My Hosted Spaces</h1>
+</div>
+
+<FluentDivider Role="DividerRole.Separator"></FluentDivider>
+<FluentSpacer Width="25"></FluentSpacer>
+
+@if (!hostedSpaces.IsNullOrEmpty())
+{
+
+    foreach (var space in hostedSpaces)
+    {
+        var currentBooking = bookings.FirstOrDefault(b => b.SpaceId == space.Id && b.EndDateTime >= DateTime.Now);
+        <FluentSpacer Width="25"></FluentSpacer>
+
+        <div class="pagination-container">
+
+            <FluentCard Width="80%">
+                <p>Location: @space.Address</p>
+                <p>Size: @space.Size.ToString()</p>
+                <p>Price: $@space.Price Per Day</p>
+                <p>Description: @space.Description</p>
+                <p>Public Status: @space.IsPublic </p>
+                <p>Booking Status: @(space.IsAvailable ? "Available to book" : (currentBooking != null ? $"Booked until {currentBooking.EndDateTime.ToShortDateString()}" : "Currently booked"))</p>
+
+
+                <p>Revenue:  </p>
+
+                @if (user != null && user.IsInRole("Admin"))
+                {
+                    <p>Host Id: @(space.HostId ?? "Unavailable")</p>
+
+                    //<FluentButton OnClick="@(() => BookNow(space.Id))">Book Now</FluentButton>
+                    <FluentButton Appearance="Appearance.Accent" @onclick="@(() => EditSpace(space.Id))">Edit Space</FluentButton>
+                    <FluentButton Appearance="Appearance.Lightweight" Color="Red" @onclick="@(() => DeleteSpace(space.Id))">Delete</FluentButton>
+
+                }
+                @if (space.IsAvailable && !user.IsInRole("Admin"))
+                {
+                    <FluentButton Appearance="Appearance.Accent" @onclick="@(() => EditSpace(space.Id))">Edit Space</FluentButton>
+                }
+                <FluentButton @onclick="@(() => TogglePublicAvailability(space.Id))">@(space.IsPublic ? "Make Listing Private" : "Make Listing Public")</FluentButton>
+
+
+            </FluentCard>
+        </div>
+
+        <FluentSpacer Width="25"></FluentSpacer>
+    }
+
+
+    <div class="pagination-container">
+        <FluentButton Disabled="@(currentPage <= 1)" OnClick="PreviousPage">Previous</FluentButton>
+        <span> Page @currentPage of @totalPages </span>
+        <FluentButton Disabled="@(currentPage >= totalPages)" OnClick="NextPage">Next</FluentButton>
+    </div>
+}
+else
+{
+    <p><em>There are no spaces to display.</em></p>
+}
+
+@code {
+    private IEnumerable<Booking> bookings;
+    private IEnumerable<Space> hostedSpaces;
+
+    private int totalSpaces;
+    private int currentPage = 1;
+    private const int pageSize = 4;
+    private int totalPages => (int)Math.Ceiling((double)totalSpaces / pageSize);
+
+    private ApplicationUser currentUser;
+
+    private ClaimsPrincipal user;
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        user = authState.User;
+
+        if (user.Identity.IsAuthenticated)
+        {
+            var userId = UserManager.GetUserId(user);
+            currentUser = await UserManager.FindByIdAsync(userId);
+        }
+        bookings = await BookingService.GetAllBookingsAsync();
+
+        await LoadSpaces();
+    }
+
+    private async Task LoadSpaces()
+    {
+        var isAdmin = user.IsInRole("Admin");
+        hostedSpaces = await SpaceService.GetAllSpacesAsync();
+
+        (hostedSpaces, totalSpaces) = await SpaceService.GetHostSpacesPageAsync(currentPage, pageSize, isAdmin, currentUser);
+
+    }
+    private async Task NextPage()
+    {
+        if (currentPage < totalPages)
+        {
+            currentPage++;
+            await LoadSpaces();
+        }
+    }
+
+    private async Task PreviousPage()
+    {
+        if (currentPage > 1)
+        {
+            currentPage--;
+            await LoadSpaces();
+        }
+    }
+    async Task DeleteSpace(string Id)
+    {
+        await SpaceService.DeleteSpaceAsync(Id);
+        hostedSpaces = await SpaceService.GetAllSpacesAsync();
+    }
+    void EditSpace(string Id)
+    {
+        NavigationManager.NavigateTo($"/edit-space/{Id}");
+    }
+    private async Task TogglePublicAvailability(string spaceId)
+    {
+        var space = await SpaceService.GetSpaceByIdAsync(spaceId);
+        if (space != null)
+        {
+            space.IsPublic = !space.IsPublic;
+            await SpaceService.UpdateSpaceAsync(space, spaceId);
+        }
+    }
+
+}

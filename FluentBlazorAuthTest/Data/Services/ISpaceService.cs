@@ -31,5 +31,8 @@ public interface ISpaceService
 
     Task<(IEnumerable<Space>, int)> GetSpacesPageAsync(int pageNumber, int pageSize, bool includeNonPublicSpaces);
 
+    Task<(IEnumerable<Space>, int)> GetHostSpacesPageAsync(int pageNumber, int pageSize, bool isAdmin, ApplicationUser currentUser);
+
+
 
 }
