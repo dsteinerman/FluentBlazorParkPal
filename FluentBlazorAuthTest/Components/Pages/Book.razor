@@ -54,6 +54,14 @@ else
         try
         {
             bookings = await BookingService.GetAllBookingsAsync();
+            var currentDate = DateTime.Now;
+            foreach (var booking in bookings)
+            {
+                if (booking.EndDateTime < currentDate && booking.IsActive)
+                {
+                    await CancelBooking(booking.Id);
+                }
+            }
         }
         catch (Exception ex)
         {
