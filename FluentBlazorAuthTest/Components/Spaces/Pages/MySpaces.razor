@@ -53,7 +53,7 @@
                 <p>Price: $@space.Price Per Day</p>
                 <p>Description: @space.Description</p>
                 <p>Public Status: @space.IsPublic </p>
-                <p>Booking Status: @(space.IsAvailable ? "Available to book" : (currentBooking != null ? $"Booked until {currentBooking.EndDateTime.ToShortDateString()}" : "Currently booked"))</p>
+            <p>Booking Status: @(space.IsAvailable ? "Available to book" : (currentBooking != null && currentBooking.IsActive ? $"Booked until {currentBooking.EndDateTime.ToShortDateString()}" : "Currently booked"))</p>
 
                 @if (user != null && user.IsInRole("Admin"))
                 {
