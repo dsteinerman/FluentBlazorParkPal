@@ -72,11 +72,10 @@
                 <br/>
                 @* IsPublic CheckBox *@
                 <FluentCard>
-                    <FluentCheckbox bind-Value="@NewSpace.IsPublic"
+                    <FluentCheckbox @onchange="HandleCheckboxChange"
                                     id="ispublic"
-                                    bind-CheckState="@NewSpace.IsPublic"
-                                    Label="I want this Space to be public and available upon submission."/>
-                    <ValidationMessage For="() => NewSpace.IsPublic" class="text-danger"/>
+                                    Label="I want this Space to be public and available upon submission." />
+                    <ValidationMessage For="() => NewSpace.IsPublic" class="text-danger" />
                 </FluentCard>
                 <br/>
                 <FluentButton 
@@ -95,6 +94,7 @@
     // Values Managing the size-enum dropdown menu
     private SpaceSize _selectedSize;
     private IEnumerable<SpaceSize> SizeOptions => Enum.GetValues(typeof(SpaceSize)).Cast<SpaceSize>();
+
 
     [SupplyParameterFromForm]
     public Space NewSpace { get; set; } = new();
@@ -149,6 +149,7 @@
             if (userId != null)
                 _currentUser = await UserManager.FindByIdAsync(userId);
         }
+
     }
 
 
@@ -174,5 +175,9 @@
 
         [Required]
         public bool IsPublic { get; set; }
+    }
+    private void HandleCheckboxChange(ChangeEventArgs e)
+    {
+        NewSpace.IsPublic = true;
     }
 }

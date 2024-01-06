@@ -142,7 +142,7 @@ namespace FluentBlazorAuthTest.Migrations
 
                     b.HasIndex("SpaceId");
 
-                    b.ToTable("Bookings");
+                    b.ToTable("Bookings", (string)null);
                 });
 
             modelBuilder.Entity("FluentBlazorAuthTest.Data.Space", b =>
@@ -188,7 +188,7 @@ namespace FluentBlazorAuthTest.Migrations
 
                     b.HasIndex("HostId");
 
-                    b.ToTable("Spaces");
+                    b.ToTable("Spaces", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>

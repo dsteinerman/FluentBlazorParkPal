@@ -1,22 +1,35 @@
 ﻿@page "/spaces/search"
+<link rel="stylesheet" href="/HTML/CSS/Styles.css" />
+
 
 @using FluentBlazorAuthTest.Data
+@using FluentBlazorAuthTest.Data.Services
 @using FluentBlazorAuthTest.Services
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.EntityFrameworkCore
 @using Microsoft.IdentityModel.Tokens
+@using System.Security.Claims
 
 
 @inject ApplicationDbContext DbContext
 @inject NavigationManager NavigationManager
+@inject ISpaceService SpaceService
 @inject GeocodingService GeocodingService
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
 
 
 @attribute [Authorize]
 
 @rendermode InteractiveServer
 
+<PageTitle>Search for a Space</PageTitle>
+
+
+<div class="pagination-container">
 <h1>Search for a Space</h1>
+</div>
+
 <FluentDivider Role="DividerRole.Separator"></FluentDivider>
 <FluentSpacer Width="25"></FluentSpacer>
 
@@ -24,16 +37,55 @@
 {
     foreach (var space in spaces)
     {
-        <FluentSpacer Width="25"></FluentSpacer>
-        <FluentCard Width="80%">
-            <p>Location: @space.Address</p>
-            <p>Size: @space.Size.ToString()</p>
-            <p>Price: $@space.Price</p>
-            <p>Description: @space.Description</p>
-        </FluentCard>
-        <FluentSpacer Width="25"></FluentSpacer>
+    <FluentSpacer Width="25"></FluentSpacer>
+
+    <div class="pagination-container">
+
+    <FluentCard Width="80%">
+        <p>Location: @space.Address</p>
+        <p>Size: @space.Size.ToString()</p>
+        <p>Price: $@space.Price Per Day</p>
+        <p>Description: @space.Description</p>
+        <p>Public Status: @space.IsPublic </p>
+
+                @if (space.IsAvailable && (space.HostId != user?.FindFirst(c => c.Type == ClaimTypes.NameIdentifier)?.Value))
+            {
+                <p>Availability: Available to book</p>
+                    <FluentButton Appearance="Appearance.Accent" OnClick="@(() => BookNow(space.Id))">Book Now</FluentButton>
+            }
+            else if (space.HostId == user?.FindFirst(c => c.Type == ClaimTypes.NameIdentifier)?.Value)
+            {
+                <p>Availability: You are not allowed to Book own Space</p>
+                    <FluentButton Appearance="Appearance.Accent" disabled OnClick="@(() => BookNow(space.Id))">Book Now</FluentButton>
+            }
+            else
+            {
+                <p>Availability: Unavailable</p>
+            }
+
+                @if (user != null && user.IsInRole("Admin"))
+                {
+                    //<FluentButton OnClick="@(() => BookNow(space.Id))">Book Now</FluentButton>
+                    <FluentButton Appearance="Appearance.Accent" @onclick="@(() => EditSpace(space.Id))">Edit Space</FluentButton>
+                    <FluentButton Appearance="Appearance.Lightweight" Color="Red" @onclick="@(() => DeleteSpace(space.Id))">Delete</FluentButton>
+
+                }
+
+    </FluentCard>
+     </div>
+
+    <FluentSpacer Width="25"></FluentSpacer>
     }
-} else {
+
+
+<div class="pagination-container">
+    <FluentButton Disabled="@(currentPage <= 1)" OnClick="PreviousPage">Previous</FluentButton>
+    <span> Page @currentPage of @totalPages </span>
+    <FluentButton Disabled="@(currentPage >= totalPages)" OnClick="NextPage">Next</FluentButton>
+</div>
+}
+else
+{
     <p><em>There are no spaces to display.</em></p>
 }
 
@@ -42,25 +94,57 @@
     private IEnumerable<Space> spaces;
     private int totalSpaces;
     private int currentPage = 1;
-    private const int PageSize = 10;
+    private const int pageSize = 10;
+    private int totalPages => (int)Math.Ceiling((double)totalSpaces / pageSize);
+
+    private ClaimsPrincipal user;
 
     protected override async Task OnInitializedAsync()
     {
-        await LoadSpaces(currentPage, PageSize);
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        user = authState.User;
+
+        await LoadSpaces();
     }
 
-    private async Task LoadSpaces(int pageNumber, int pageSize)
+    private async Task LoadSpaces()
     {
-        var query = DbContext.Spaces
-            .Where(s => s.IsPublic)
-            .OrderByDescending(s => s.DateCreated);
+        var includePrivateSpaces = user.IsInRole("Admin");
+        spaces = await SpaceService.GetAllSpacesAsync();
+        (spaces, totalSpaces) = await SpaceService.GetSpacesPageAsync(currentPage, pageSize, includePrivateSpaces);
 
-        totalSpaces = await query.CountAsync();
+    }
+    
 
-        spaces = await query.Skip((pageNumber - 1) * pageSize)
-            .Take(pageSize)
-            .ToListAsync();
+    private async Task NextPage()
+    {
+        if (currentPage < totalPages)
+        {
+            currentPage++;
+            await LoadSpaces();
+        }
+    }
 
+    private async Task PreviousPage()
+    {
+        if (currentPage > 1)
+        {
+            currentPage--;
+            await LoadSpaces();
+        }
+    }
+    private void BookNow(string spaceId)
+    {
+        NavigationManager.NavigateTo($"/edit-booking/{spaceId}");
+    }
+    async Task DeleteSpace(string Id)
+    {
+        await SpaceService.DeleteSpaceAsync(Id);
+        spaces = await SpaceService.GetAllSpacesAsync();
+    }
+    void EditSpace(string Id)
+    {
+    NavigationManager.NavigateTo($"/edit-space/{Id}");
     }
 
 }

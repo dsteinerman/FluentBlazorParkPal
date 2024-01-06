@@ -24,4 +24,10 @@
   <ItemGroup>
     <None Include="wwwroot\HTML\Explore.html" />
   </ItemGroup>
+  <ItemGroup>
+    <UpToDateCheckInput Remove="Components\Spaces\Pages\EditBooking.razor" />
+  </ItemGroup>
+  <ItemGroup>
+    <_ContentIncludedByDefault Remove="Components\Spaces\Pages\EditBooking.razor" />
+  </ItemGroup>
 </Project>

@@ -1,4 +1,6 @@
-﻿namespace FluentBlazorAuthTest.Data.Services;
+﻿using Microsoft.EntityFrameworkCore;
+
+namespace FluentBlazorAuthTest.Data.Services;
 
 public interface ISpaceService
 {
@@ -15,10 +17,22 @@ public interface ISpaceService
 
     /* Update */
 
-    Task UpdateSpaceAsync(Space space);
+    Task UpdateSpaceAsync(Space space, string spaceId);
 
     /* Delete */
 
     Task DeleteSpaceAsync(string spaceId);
+
+    Task AddSpaceAsync(Space space);
+
+    Task<IEnumerable<Space>> GetSpacesByHostIdAsync(string hostId);
+
+    Task<decimal> GetSpacePriceByIdAsync(string spaceId);
+
+    Task<(IEnumerable<Space>, int)> GetSpacesPageAsync(int pageNumber, int pageSize, bool includeNonPublicSpaces);
+
+    Task<(IEnumerable<Space>, int)> GetHostSpacesPageAsync(int pageNumber, int pageSize, bool isAdmin, ApplicationUser currentUser);
+
+
 
 }
