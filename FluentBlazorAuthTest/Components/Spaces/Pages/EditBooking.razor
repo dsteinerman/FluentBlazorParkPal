@@ -140,31 +140,45 @@
             var booking = await BookingService.GetBookingByIdAsync(Id);
             if (booking != null)
             {
+                
                 CurrentBooking = booking;
                 IsExistingBooking = true;
-
-                // Set the current space based on the booking's space id
-                CurrentSpace = await SpaceService.GetSpaceByIdAsync(booking.SpaceId);
-
-                // Use the dates from the existing booking
                 StartDate = booking.StartDateTime;
                 EndDate = booking.EndDateTime;
+                CurrentSpace = await SpaceService.GetSpaceByIdAsync(booking.SpaceId);
             }
             else
             {
-                // Handle scenario where no existing booking is found
-                NavigationManager.NavigateTo("/Book/");
+                
+                CurrentSpace = await SpaceService.GetSpaceByIdAsync(Id);
+                if (CurrentSpace != null)
+                {
+                    CurrentBooking = new Booking
+                        {
+                            SpaceId = Id,
+                            ClientUserId = user.Identity.IsAuthenticated ? user.FindFirst(ClaimTypes.NameIdentifier)?.Value : null,
+                            StartDateTime = StartDate,
+                            EndDateTime = EndDate,
+                            IsActive = true
+                        };
+                }
+                else
+                {
+                   
+                    NavigationManager.NavigateTo("/Book/");
+                }
             }
         }
         else
         {
-            // Handle scenario for new booking
+            
             CurrentBooking = new Booking
                 {
                     ClientUserId = user.Identity.IsAuthenticated ? user.FindFirst(ClaimTypes.NameIdentifier)?.Value : null
                 };
         }
     }
+
 
     async Task HandleSubmit()
     {
