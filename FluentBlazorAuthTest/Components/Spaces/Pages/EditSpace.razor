@@ -1,0 +1,113 @@
+﻿@page "/edit-space/{Id}"
+<link rel="stylesheet" href="/HTML/CSS/Styles.css" />
+
+@using FluentBlazorAuthTest.Data
+@using FluentBlazorAuthTest.Data.Services
+@using System.Security.Claims
+@using Microsoft.AspNetCore.Authorization
+@inject ISpaceService SpaceService
+@inject NavigationManager NavigationManager
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+
+@rendermode InteractiveServer
+
+@attribute [Authorize]
+
+
+@if (CurrentSpace != null)
+{
+    <PageTitle>Edit Space</PageTitle>
+    <div class="pagination-container">
+    <h1>Edit "@CurrentSpace.Address"</h1>
+    </div>
+
+    <FluentDivider Role="DividerRole.Separator"></FluentDivider>
+
+    <EditForm Model="CurrentSpace" OnSubmit="HandleSubmit">
+
+
+    <FluentSpacer Width="25"></FluentSpacer>
+
+    <div class="pagination-container">
+
+        <FluentCard Width="80%">
+            <label for="size">Size: </label>
+            <InputSelect id="size" @bind-Value="CurrentSpace.Size">
+                @foreach (var size in Enum.GetValues(typeof(SpaceSize)))
+                {
+                    <option value="@size">@size</option>
+                }
+            </InputSelect>
+
+            <div>
+                <label for="price">Price Per Day</label>
+                <InputNumber id="price" @bind-Value="CurrentSpace.Price" />
+            </div>
+            <div>
+                <label for="description">Description</label>
+                <InputText id="description" @bind-Value="CurrentSpace.Description" />
+            </div>
+
+            <div>
+                <label for="isPublic">Post space?</label>
+                <InputRadioGroup id="isPublic" @bind-Value="CurrentSpace.IsPublic">
+                    <InputRadio Value="true" /> Yes
+                    <InputRadio Value="false" /> No
+                </InputRadioGroup>
+            </div>
+            <FluentButton Type="ButtonType.Submit" Appearance="Appearance.Accent">Save</FluentButton>
+
+        </FluentCard>
+    </div>
+
+    <FluentSpacer Width="25"></FluentSpacer>
+    </EditForm>
+
+}
+
+@code {
+    [Parameter]
+    public string? Id { get; set; }
+
+    public Space CurrentSpace { get; set; }
+
+    private IEnumerable<Space> spaces;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        if (!string.IsNullOrEmpty(Id))
+        {
+            CurrentSpace = await SpaceService.GetSpaceByIdAsync(Id);
+        }
+
+        if (CurrentSpace == null || !IsValidUserForEditing(user))
+        {
+            // Navigate to create or unauthorized access page
+            NavigationManager.NavigateTo("/spaces/create/");
+        }
+    }
+
+    private bool IsValidUserForEditing(ClaimsPrincipal user)
+    {
+        if (user.Identity?.IsAuthenticated != true || CurrentSpace == null)
+        {
+            return false;
+        }
+
+        bool isHost = CurrentSpace.HostId == user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        bool isAdmin = user.IsInRole("Admin");
+
+        return isHost || isAdmin;
+    }
+
+    async Task HandleSubmit()
+    {
+        await SpaceService.UpdateSpaceAsync(CurrentSpace, (string) Id);
+        NavigationManager.NavigateTo("/spaces/search");
+        
+    }
+}

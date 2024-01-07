@@ -69,7 +69,7 @@ namespace FluentBlazorAuthTest.Data
         /// End date and time of the booking.
         /// </summary>
         [DataType(DataType.DateTime)]
-        public DateTime EndDateTime { get; set; } 
+        public DateTime EndDateTime { get; set; }
 
         /// <summary>
         /// Any notes or special requests made by the customer.

@@ -163,6 +163,9 @@ namespace FluentBlazorAuthTest.Migrations
                     b.Property<string>("HostId")
                         .HasColumnType("nvarchar(450)");
 
+                    b.Property<bool>("IsAvailable")
+                        .HasColumnType("bit");
+
                     b.Property<bool>("IsPublic")
                         .HasColumnType("bit");
 
@@ -216,6 +219,22 @@ namespace FluentBlazorAuthTest.Migrations
                         .HasFilter("[NormalizedName] IS NOT NULL");
 
                     b.ToTable("AspNetRoles", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = "53ded116-2219-43f1-ae5a-aca97e902d18",
+                            ConcurrencyStamp = "09d3f6e7-4e3d-4fd4-bf73-99d0a8983e76",
+                            Name = "User",
+                            NormalizedName = "USER"
+                        },
+                        new
+                        {
+                            Id = "95ad0b71-22e7-4c6d-a136-360ba8462012",
+                            ConcurrencyStamp = "edafa638-cf92-4ff8-bc78-e4c4aadda2b9",
+                            Name = "Admin",
+                            NormalizedName = "ADMIN"
+                        });
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
