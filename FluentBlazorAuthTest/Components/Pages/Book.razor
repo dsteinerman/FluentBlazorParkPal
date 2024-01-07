@@ -214,7 +214,8 @@ public async Task PayForBooking(string bookingId)
 
             await DbContext.SaveChangesAsync();
 
-            NavigationManager.NavigateTo("/Book/");
+            await LoadBookings();
+            StateHasChanged();
         }
     }
     

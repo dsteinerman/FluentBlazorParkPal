@@ -182,6 +182,7 @@ else
             space.IsPublic = !space.IsPublic;
             await SpaceService.UpdateSpaceAsync(space, spaceId);
             await LoadSpaces();
+            StateHasChanged();
         }
     }
 
