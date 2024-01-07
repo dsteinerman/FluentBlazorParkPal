@@ -107,20 +107,17 @@ namespace FluentBlazorAuthTest.Data.Services
             return (spaces, totalSpaces);
         }
 
-        public async Task<(IEnumerable<Space>, int)> GetHostSpacesPageAsync(int pageNumber, int pageSize, bool isAdmin, ApplicationUser currentUser)
+        public async Task<(IEnumerable<Space>, int)> GetHostSpacesPageAsync(int pageNumber, int pageSize, ApplicationUser currentUser)
         {
             using var context = _contextFactory.CreateDbContext();
-            var query = context.Spaces.AsQueryable();
 
-            if (!isAdmin)
-            {
-                query = query.Where(space => space.HostId == currentUser.Id);
-            }
+            var query = context.Spaces.Where(space => space.HostId == currentUser.Id);
 
             var totalSpaces = await query.CountAsync();
             var spaces = await query.Skip((pageNumber - 1) * pageSize).Take(pageSize).ToListAsync();
 
             return (spaces, totalSpaces);
         }
+
     }
 }

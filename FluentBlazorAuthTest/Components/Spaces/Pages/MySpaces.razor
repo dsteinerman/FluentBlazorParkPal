@@ -140,7 +140,7 @@ else
     private async Task LoadSpaces()
     {
     hostedSpaces = await SpaceService.GetAllSpacesAsync();
-    (hostedSpaces, totalSpaces) = await SpaceService.GetHostSpacesPageAsync(currentPage, pageSize, isAdmin, _currentUser);
+    (hostedSpaces, totalSpaces) = await SpaceService.GetHostSpacesPageAsync(currentPage, pageSize, _currentUser);
     }
 
     private async Task NextPage()
