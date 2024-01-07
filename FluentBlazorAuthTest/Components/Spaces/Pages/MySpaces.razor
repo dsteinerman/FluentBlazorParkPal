@@ -1,7 +1,6 @@
 ﻿
 @page "/MySpaces/"
 
-@rendermode InteractiveServer
 <link rel="stylesheet" href="/HTML/CSS/Styles.css" />
 
 
@@ -28,6 +27,8 @@
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject IDbContextFactory<ApplicationDbContext> DbContextFactory
 
+
+@rendermode InteractiveServer
 
 <PageTitle>My Hosted Spaces</PageTitle>
 
@@ -57,17 +58,19 @@
                 <p>Public Status: @space.IsPublic </p>
             <p>Booking Status: @(space.IsAvailable ? "Available to book" : (currentBooking != null && currentBooking.IsActive ? $"Booked until {currentBooking.EndDateTime.ToShortDateString()}" : "Currently booked"))</p>
 
-                @if (user != null && user.IsInRole("Admin"))
+                @if (!isAdmin)
                 {
-                    <p>Host Id: @(space.HostId ?? "Unavailable")</p>
+                    
 
                     <FluentButton Appearance="Appearance.Accent" @onclick="@(() => EditSpace(space.Id))">Edit Space</FluentButton>
                     <FluentButton Appearance="Appearance.Lightweight" Color="Red" @onclick="@(() => DeleteSpace(space.Id))">Delete</FluentButton>
 
                 }
                 @if(isAdmin)
+
                 {
-                    <FluentButton Appearance="Appearance.Lightweight" Color="Red" @onclick="@(() => DeleteSpace(space.Id))">Delete</FluentButton>
+                <p>Host Id: @(space.HostId ?? "Unavailable")</p>
+                    <FluentButton Appearance="Appearance.Lightweight" Color="Red" @onclick="@(() => DeleteSpaceAdmin(space.Id))">Delete</FluentButton>
 
                     <FluentButton Appearance="Appearance.Accent" @onclick="@(() => EditSpace(space.Id))">Edit Space</FluentButton>
                 }
@@ -160,7 +163,12 @@ else
     async Task DeleteSpace(string Id)
     {
         await SpaceService.DeleteSpaceAsync(Id);
-        hostedSpaces = await SpaceService.GetAllSpacesAsync();
+        await LoadSpaces();
+    }
+    async Task DeleteSpaceAdmin(string Id)
+    {
+    await SpaceService.DeleteSpaceAsync(Id);
+    hostedSpaces = await SpaceService.GetAllSpacesAsync();
     }
     void EditSpace(string Id)
     {
@@ -173,6 +181,7 @@ else
         {
             space.IsPublic = !space.IsPublic;
             await SpaceService.UpdateSpaceAsync(space, spaceId);
+            await LoadSpaces();
         }
     }
 

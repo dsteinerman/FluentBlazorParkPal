@@ -51,12 +51,12 @@
         <p>Description: @space.Description</p>
         <p>Public Status: @space.IsPublic </p>
 
-                @if (space.IsAvailable && (space.HostId != user?.FindFirst(c => c.Type == ClaimTypes.NameIdentifier)?.Value))
+            @if (space.IsAvailable && (space.HostId != _currentUser.Id))
             {
                 <p>Availability: Available to book</p>
                     <FluentButton Appearance="Appearance.Accent" OnClick="@(() => BookNow(space.Id))">Book Now</FluentButton>
             }
-            else if (space.HostId == user?.FindFirst(c => c.Type == ClaimTypes.NameIdentifier)?.Value)
+            else if (space.HostId == _currentUser.Id)
             {
                 <p>Availability: You are not allowed to Book own Space</p>
                     <FluentButton Appearance="Appearance.Accent" disabled OnClick="@(() => BookNow(space.Id))">Book Now</FluentButton>

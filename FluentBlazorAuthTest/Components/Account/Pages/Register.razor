@@ -17,7 +17,6 @@
 @inject IdentityRedirectManager RedirectManager
 
 <PageTitle>Register</PageTitle>
-
 <h1>Register</h1>
 
 <FluentGrid>
@@ -39,7 +38,7 @@
                 <ValidationMessage For="() => Input.Password" class="text-danger" />
                 <FluentTextField type="password" Name="Input.ConfirmPassword" @bind-Value="Input.ConfirmPassword" AutoComplete="new-password" Required="true" Placeholder="password" Label="Confirm Password" Style="width: 100%" />
                 <ValidationMessage For="() => Input.ConfirmPassword" class="text-danger" />
-                <FluentButton Type="ButtonType.Submit" Appearance="Appearance.Accent" Style="width: 100%">Log in</FluentButton>
+                <FluentButton Type="ButtonType.Submit" Appearance="Appearance.Accent" Style="width: 100%">Register</FluentButton>
             </FluentStack>
         </EditForm>
     </FluentGridItem>
