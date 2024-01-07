@@ -89,7 +89,7 @@ else
 
     foreach (var booking in bookings)
     {
-        if (booking != null && !spaceDetailsForBookings.ContainsKey(booking.SpaceId))
+        if (booking != null && booking.SpaceId != null && !spaceDetailsForBookings.ContainsKey(booking.SpaceId))
 
         {
             Space space = await SpaceService.GetSpaceByIdAsync(booking.SpaceId);
@@ -202,7 +202,7 @@ public async Task PayForBooking(string bookingId)
                                 <section class="booking-management">
                                     <div class="bookings-list">
                                         <div class="booking-item">
-                                            @if (spaceDetailsForBookings.TryGetValue(booking.SpaceId, out var space))
+                                        @if (booking.SpaceId != null && spaceDetailsForBookings.TryGetValue(booking.SpaceId, out var space))
                                             {
                                                 <h3 class="space-address">@space.Address</h3>
                                                 <p class="booking-details">Booking Id: @booking.Id</p>
@@ -219,7 +219,7 @@ public async Task PayForBooking(string bookingId)
                                             {
                                                 if (booking.PaymentStatus == PaymentStatus.Unpaid && booking.EndDateTime >= DateTime.Now)
                                                 {
-                                                    <FluentButton OnClick="@(() => EditBooking(@booking.SpaceId))">Edit</FluentButton>
+                                                    <FluentButton OnClick="@(() => EditBooking(@booking.Id))">Edit</FluentButton>
                                                 }
 
                                                 <FluentButton OnClick="@(() => CancelBooking(@booking.Id))">Cancel</FluentButton>
