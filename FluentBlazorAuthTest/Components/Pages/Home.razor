@@ -2,115 +2,84 @@
 
 <PageTitle>Home</PageTitle>
 
-<div style="margin-top: 20px; font-size: 42px; font-weight: bold;">
-    Welcome to <strong>ParkPal!</strong>
+<FluentSpacer Width="50" />
+<div style="font-size: 48px; font-weight: bold; color: #3498db;">
+    Welcome to <strong style="color: #2c3e50;">ParkPal!</strong>
 </div>
-<FluentSpacer Width="50"/>
-<FluentDivider Orientation="Orientation.Horizontal"/>
-<div style="margin-top: 20px;">
-    <FluentGrid Justify="JustifyContent.SpaceAround">
-        
-        <AuthorizeView>
-            
-            <NotAuthorized>
-                <FluentGridItem xs="12" sm="6">
-                    <FluentCard Width="80%">
-                        <FluentNavLink Href="Account/Register" Icon="@(new Icons.Filled.Size20.PersonAdd())">
-                            <FluentLabel Color="Color.Accent" Typo="Typography.H4" Weight="FontWeight.Bolder">
-                                Register
-                            </FluentLabel>
-                        </FluentNavLink>
-                        <p>Start Using ParkPal today!</p>
-                    </FluentCard>
-                </FluentGridItem>
-
-                <FluentGridItem xs="12" sm="6">
-                    <FluentCard Width="80%">
-                        <FluentNavLink Href="Account/Login" Icon="@(new Icons.Filled.Size20.ArrowEnter())">
-                            <FluentLabel Color="Color.Accent" Typo="Typography.H4" Weight="FontWeight.Bolder">
-                                Log-In
-                            </FluentLabel>
-                        </FluentNavLink>
-                        <p>Already have an account? Log into it right here!</p>
-                    </FluentCard>
-                </FluentGridItem>
-            </NotAuthorized>
-
-            <Authorized>
-                <FluentGridItem xs="12" sm="6">
-                    <FluentCard Width="80%">
-                        <FluentNavLink Href="spaces/create" Icon="@(new Icons.Filled.Size20.AddCircle())">
-                            <FluentLabel Color="Color.Accent" Typo="Typography.H4" Weight="FontWeight.Bolder">
-                                Create
-                            </FluentLabel>
-                        </FluentNavLink>
-                        <p>your very own space!</p>
-                    </FluentCard>
-                </FluentGridItem>
-
-                <FluentGridItem xs="12" sm="6">
-                    <FluentCard Width="80%">
-                        <FluentNavLink Href="spaces/search" Icon="@(new Icons.Filled.Size20.VehicleCarParking())">
-                            <FluentLabel Color="Color.Accent" Typo="Typography.H4" Weight="FontWeight.Bolder">
-                                Search
-                            </FluentLabel>
-                        </FluentNavLink>
-                        <p>for a space to park!</p>
-                    </FluentCard>
-                </FluentGridItem>
-            </Authorized>
-        </AuthorizeView>
-        
-        <AuthorizeView Roles="Admin">
-            <FluentGridItem xs="12" sm="6" HiddenWhen="GridItemHidden.SmAndDown">
-                <FluentCard Width="75%">
-                    <FluentLabel
-                        Color="Color.Warning"
-                        Typo="Typography.H3"
-                        Weight="FontWeight.Bold">
-
-                        You are signed in as an Admin.
-
-                    </FluentLabel>
+<FluentSpacer Width="50" />
+<div style="font-size: 24px; margin-top: 20px; color: #3498db;">
+    Your Solution for Convenient Parking
+</div>
+<FluentSpacer Width="50" />
+<div style="color: #555; font-size: 24px">
+    <p>Find hassle-free parking spots with ParkPal! Discover and reserve parking spaces near your destination quickly and easily. Whether it's for work, events, or outings, ParkPal helps you locate available parking spaces and secure your spot in advance.</p>
+</div>
+<FluentSpacer Width="100"/>
+<FluentGrid Justify="JustifyContent.SpaceAround">
+    
+    <AuthorizeView>
+        <NotAuthorized>
+            <FluentGridItem xs="12" sm="6">
+                <FluentCard Width="80%">
+                    <FluentNavLink Href="Account/Register" Icon="@(new Icons.Filled.Size20.PersonAdd())">
+                        <FluentLabel Color="Color.Accent" Typo="Typography.H4" Weight="FontWeight.Bolder">
+                            Register
+                        </FluentLabel>
+                    </FluentNavLink>
+                    <p>Start Using ParkPal today!</p>
                 </FluentCard>
             </FluentGridItem>
-        </AuthorizeView>
 
-<style>
+            <FluentGridItem xs="12" sm="6">
+                <FluentCard Width="80%">
+                    <FluentNavLink Href="Account/Login" Icon="@(new Icons.Filled.Size20.ArrowEnter())">
+                        <FluentLabel Color="Color.Accent" Typo="Typography.H4" Weight="FontWeight.Bolder">
+                            Log-In
+                        </FluentLabel>
+                    </FluentNavLink>
+                    <p>Already have an account? Log into it right here!</p>
+                </FluentCard>
+            </FluentGridItem>
+        </NotAuthorized>
+
+        <Authorized>
+            <FluentGridItem xs="12" sm="6">
+                <FluentCard Width="80%">
+                    <FluentNavLink Href="spaces/create" Icon="@(new Icons.Filled.Size20.AddCircle())">
+                        <FluentLabel Color="Color.Accent" Typo="Typography.H4" Weight="FontWeight.Bolder">
+                            Create
+                        </FluentLabel>
+                    </FluentNavLink>
+                    <p>your very own space!</p>
+                </FluentCard>
+            </FluentGridItem>
+
+            <FluentGridItem xs="12" sm="6">
+                <FluentCard Width="80%">
+                    <FluentNavLink Href="spaces/search" Icon="@(new Icons.Filled.Size20.VehicleCarParking())">
+                        <FluentLabel Color="Color.Accent" Typo="Typography.H4" Weight="FontWeight.Bolder">
+                            Search
+                        </FluentLabel>
+                    </FluentNavLink>
+                    <p>for a space to park!</p>
+                </FluentCard>
+            </FluentGridItem>
+        </Authorized>
+    </AuthorizeView>
     
-    .cta a {
-        padding: 12px 24px;
-        background-color: #3498db;
-        color: #fff;
-        text-decoration: none;
-        font-weight: bold;
-        border-radius: 5px;
-        transition: background-color 0.3s ease, transform 0.2s ease-in-out;
-        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-    }
+    <AuthorizeView Roles="Admin">
+        <FluentGridItem xs="12" sm="6" HiddenWhen="GridItemHidden.SmAndDown">
+            <FluentCard Width="75%">
+                <FluentLabel
+                    Color="Color.Warning"
+                    Typo="Typography.H3"
+                    Weight="FontWeight.Bold">
 
-        .cta a:hover {
-            background-color: #2980b9;
-            transform: translateY(-2px);
-        }
-</style>
+                    You are signed in as an Admin.
 
-<div style="text-align: center; margin-top: 50px;">
-    <div style="font-size: 48px; font-weight: bold; color: #3498db;">
-        Welcome to <strong style="color: #2c3e50;">ParkPal!</strong>
-    </div>
-    <div style="font-size: 24px; margin-top: 20px; color: #3498db;">
-        Your Solution for Convenient Parking
-    </div>
-    <div style="text-align: center; margin-top: 30px; max-width: 600px; margin-left: auto; margin-right: auto; font-size: 18px; color: #555;">
-        <p>Find hassle-free parking spots with ParkPal! Discover and reserve parking spaces near your destination quickly and easily. Whether it's for work, events, or outings, ParkPal helps you locate available parking spaces and secure your spot in advance.</p>
-    </div>
-    <div class="cta" style="text-align: center; margin-top: 30px;">
-        <p><a href="https://localhost:7275/spaces/create">Start Your ParkPal Journey</a></p>
-    </div>
-</div>
-
-<div style="margin-top: 20px;">
-    <p>Start your ParkPal Journey <a href="https://localhost:7275/spaces/create">here</a>.</p>
-</div>
+                </FluentLabel>
+            </FluentCard>
+        </FluentGridItem>
+    </AuthorizeView>
+</FluentGrid>
 
