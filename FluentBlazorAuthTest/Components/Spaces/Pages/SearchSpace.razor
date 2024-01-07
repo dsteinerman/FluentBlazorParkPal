@@ -66,10 +66,9 @@
                 <p>Availability: Unavailable</p>
             }
 
-                @if (user != null && user.IsInRole("Admin"))
+                @if (isAdmin)
                 {
-                <p>Public Status: @space.IsPublic </p>
-                    //<FluentButton OnClick="@(() => BookNow(space.Id))">Book Now</FluentButton>
+           
                     <FluentButton Appearance="Appearance.Accent" @onclick="@(() => EditSpace(space.Id))">Edit Space</FluentButton>
                     <FluentButton Appearance="Appearance.Lightweight" Color="Red" @onclick="@(() => DeleteSpace(space.Id))">Delete</FluentButton>
 
@@ -103,6 +102,7 @@ else
 
     private ClaimsPrincipal user;
     private ApplicationUser? _currentUser;
+    private bool isAdmin;
 
 
     protected override async Task OnInitializedAsync()
@@ -117,6 +117,7 @@ else
             if (!string.IsNullOrEmpty(userId))
             {
                 await LoadCurrentUserAsync(userId);
+                isAdmin = await UserManager.IsInRoleAsync(_currentUser, "Admin");
             }
         }
     await LoadSpaces();
