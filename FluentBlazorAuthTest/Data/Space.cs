@@ -52,6 +52,7 @@ namespace FluentBlazorAuthTest.Data
         /// The price set for the space. Consider implementing a pricing algorithm for standardization.
         /// </summary>
         [Column(TypeName = "decimal(8, 2)")]
+        [DataType(DataType.Currency)]
         public decimal? Price { get; set; }
 
         /// <summary>
