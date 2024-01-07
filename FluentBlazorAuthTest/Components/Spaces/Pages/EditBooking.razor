@@ -196,6 +196,11 @@
         CurrentBooking.PaymentStatus = PaymentStatus.Unpaid;
         CurrentBooking.BookingStatus = BookingStatus.Pending;
         await BookingService.AddBookingAsync(CurrentBooking);
+        if (CurrentSpace != null)
+        {
+            CurrentSpace.IsAvailable = false;
+            await SpaceService.UpdateSpaceAsync(CurrentSpace, CurrentBooking.SpaceId);
+        }
     }
 
     NavigationManager.NavigateTo("/Book/");
