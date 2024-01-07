@@ -1,0 +1,87 @@
+﻿@rendermode InteractiveServer
+
+@using FluentBlazorAuthTest.Data
+@using Microsoft.AspNetCore.Identity
+@using System.Security.Claims
+@using Microsoft.EntityFrameworkCore.Metadata
+
+@implements IDisposable
+
+@inject UserManager<ApplicationUser> UserManager
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject NavigationManager NavigationManager
+
+<FluentHeader>
+    <!-- ParkPal Logo -->
+    <div class="logo">
+        <img src="/images/PPlogo.png" alt="ParkPal Logo" style="max-height: 40px; width: auto;">
+
+    </div>
+
+    <!-- Header Menu -->
+    <!-- TO BE UPDATED-->
+    <FluentSpacer /> @* Aligns content to the end *@
+    <AuthorizeView>
+        <NotAuthorized>
+            <FluentNavLink Href="Account/Register" Icon="@(new Icons.Filled.Size20.PersonAdd())" IconColor="Color.Neutral">Register</FluentNavLink>
+            <FluentSpacer Width="20" />
+            <FluentNavLink Href="Account/Login" Icon="@(new Icons.Filled.Size20.ArrowEnter())" IconColor="Color.Neutral">Log-In</FluentNavLink>
+        </NotAuthorized>
+        <Authorized>
+            @* Attempting to implement this Persona Badge caused too many problems. *@
+            @* <FluentPersona Name="@fullName" ImageSize="50px" Status="PresenceStatus.Available" StatusSize="PresenceBadgeSize.Small"> *@
+            @* <input type="hidden" name="ReturnUrl" value="@currentUrl"/> *@
+            <FluentDivider Orientation="Orientation.Vertical"/>
+            <form action="Account/Logout" method="post">
+                <AntiforgeryToken/>
+                <input type="hidden" name="ReturnUrl" value="@currentUrl"/>
+                <FluentButton Type="ButtonType.Submit"
+                              IconEnd="@(new Icons.Filled.Size20.ArrowExit())">
+                    Logout
+                </FluentButton>
+            </form>
+        </Authorized>
+    </AuthorizeView>
+</FluentHeader>
+
+@code {
+    private string? currentUrl;
+
+    // private ApplicationUser currentUser;
+    // private ClaimsPrincipal user;
+
+    // private string fullName { get; set; } = "";
+
+    protected override async void OnInitialized()
+    {
+        currentUrl = NavigationManager.ToBaseRelativePath(NavigationManager.Uri);
+        NavigationManager.LocationChanged += OnLocationChanged;
+
+        // await GetCurrentUser();
+    }
+
+    // private async Task GetCurrentUser()
+    // {
+    //     var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+    //     user = authState.User;
+
+    //     if (user.Identity.IsAuthenticated)
+    //     {
+    //         var userId = UserManager.GetUserId(user);
+    //         currentUser = await UserManager.FindByIdAsync(userId);
+
+    //         fullName = $"{currentUser.FirstName} {currentUser.LastName}";
+    //     }
+    // }
+
+    private void OnLocationChanged(object? sender, LocationChangedEventArgs e)
+    {
+        currentUrl = NavigationManager.ToBaseRelativePath(e.Location);
+        StateHasChanged();
+    }
+
+    public void Dispose()
+    {
+        NavigationManager.LocationChanged -= OnLocationChanged;
+    }
+}

@@ -1,29 +1,27 @@
-﻿@inherits LayoutComponentBase
+﻿@using FluentBlazorAuthTest.Data
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.EntityFrameworkCore.Metadata
+
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject UserManager<ApplicationUser> UserManager
+
+@inherits LayoutComponentBase
+
 <FluentLayout>
-    <FluentHeader>
-        <!-- ParkPal Logo -->
-        <div class="logo">
-            <img src="/images/PPlogo.png" alt="ParkPal Logo" style="max-height: 40px; width: auto;">
-         
-        </div>
-        <!-- Header Menu -->
-        <div class="header-menu">
-            <ul>
-                <li><a href="https://localhost:7275/">Home</a></li>
-                <li><a href="https://localhost:7275/spaces/search">Explore</a></li>
-                <li><a href="https://localhost:7275/Support">Support</a></li>
-                
-            </ul>
-        </div>
-    </FluentHeader>
-    <FluentStack Class="main" Orientation="Orientation.Horizontal" Width="100%">
-        <NavMenu />
-        <FluentBodyContent>
-            <div class="content">
-                @Body
-            </div>
-        </FluentBodyContent>
-    </FluentStack>
+    <MainHeader/>
+
+        <FluentStack Class="main" Orientation="Orientation.Horizontal" Width="100%">
+            <AuthorizeView>
+                <Authorized>
+                    <NavMenu />
+                </Authorized>
+            </AuthorizeView>
+            <FluentBodyContent>
+                <div class="content">
+                    @Body
+                </div>
+            </FluentBodyContent>
+        </FluentStack>
     <!-- Footer Menu -->
     <FluentFooter>
         <div class="footer-links">
@@ -31,7 +29,7 @@
                 <a href="https://localhost:7275/" target="_blank">Home</a>
             </div>
             <div class="link">
-                <a href="https://localhost:7275/spaces/search" target="_blank">Explore</a>
+                <a href="https://localhost:7275/Explore" target="_blank">Explore</a>
             </div>
             <div class="link">
                 <a href="https://localhost:7275/Settings" target="_blank">Settings</a>
@@ -41,7 +39,6 @@
             </div>
         </div>
     </FluentFooter>
-
 </FluentLayout>
 
 <!-- Error Message -->
@@ -52,18 +49,18 @@
 </div>
 
 <style>
-   
+
     .header {
-        background-color: #333; 
-        color: #fff; 
+        background-color: #333;
+        color: #fff;
         padding: 10px;
         display: flex;
-        align-items: center; 
-        justify-content: space-between; 
+        align-items: center;
+        justify-content: space-between;
     }
 
     .logo {
-        margin-right: 20px; 
+        margin-right: 20px;
     }
 
     .header-menu ul {
@@ -78,7 +75,7 @@
         }
 
             .header-menu ul li a {
-                color: #fff; 
+                color: #fff;
                 text-decoration: none;
             }
 
@@ -91,8 +88,8 @@
         justify-content: space-between;
         align-items: center;
         width: 100%;
-        padding: 10px; 
-        box-sizing: border-box; 
+        padding: 10px;
+        box-sizing: border-box;
     }
 
     .link {
@@ -104,8 +101,31 @@
             text-decoration: none;
             color: #333;
             display: block;
-            padding: 10px; 
+            padding: 10px;
             font-size: 16px;
-            font-weight: bold; 
+            font-weight: bold;
         }
 </style>
+
+@code
+{
+    private string? fullName;
+    private ApplicationUser currentUser;
+
+    //  executed during component initialization
+    protected override async Task OnInitializedAsync()
+    {
+        // Retrieving authentication state
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        // Checking if user is authenticated
+        if (user.Identity.IsAuthenticated)
+        {
+            // Retrieving user details if authenticated
+            var userId = UserManager.GetUserId(user);
+            currentUser = await UserManager.FindByIdAsync(userId);
+            fullName = $"{currentUser.FirstName} {currentUser.LastName}";
+        }
+    }
+}

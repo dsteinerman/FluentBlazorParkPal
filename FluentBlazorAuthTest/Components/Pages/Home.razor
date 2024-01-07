@@ -1,18 +1,83 @@
 ﻿@page "/"
 
-
-
 <PageTitle>Home</PageTitle>
-
-<AuthorizeView Roles="Admin">Admin!</AuthorizeView>
-
-<AuthorizeView Roles="User">User!</AuthorizeView>
 
 <div style="margin-top: 20px; font-size: 42px; font-weight: bold;">
     Welcome to <strong>ParkPal!</strong>
 </div>
-
+<FluentSpacer Width="50"/>
+<FluentDivider Orientation="Orientation.Horizontal"/>
 <div style="margin-top: 20px;">
-    <p>Start your ParkPal Journey <a href="https://localhost:7275/spaces/create">here</a>.</p>
+    <FluentGrid Justify="JustifyContent.SpaceAround">
+        
+        <AuthorizeView>
+            
+            <NotAuthorized>
+                <FluentGridItem xs="12" sm="6">
+                    <FluentCard Width="80%">
+                        <FluentNavLink Href="Account/Register" Icon="@(new Icons.Filled.Size20.PersonAdd())">
+                            <FluentLabel Color="Color.Accent" Typo="Typography.H4" Weight="FontWeight.Bolder">
+                                Register
+                            </FluentLabel>
+                        </FluentNavLink>
+                        <p>Start Using ParkPal today!</p>
+                    </FluentCard>
+                </FluentGridItem>
+
+                <FluentGridItem xs="12" sm="6">
+                    <FluentCard Width="80%">
+                        <FluentNavLink Href="Account/Login" Icon="@(new Icons.Filled.Size20.ArrowEnter())">
+                            <FluentLabel Color="Color.Accent" Typo="Typography.H4" Weight="FontWeight.Bolder">
+                                Log-In
+                            </FluentLabel>
+                        </FluentNavLink>
+                        <p>Already have an account? Log into it right here!</p>
+                    </FluentCard>
+                </FluentGridItem>
+            </NotAuthorized>
+
+            <Authorized>
+                <FluentGridItem xs="12" sm="6">
+                    <FluentCard Width="80%">
+                        <FluentNavLink Href="spaces/create" Icon="@(new Icons.Filled.Size20.AddCircle())">
+                            <FluentLabel Color="Color.Accent" Typo="Typography.H4" Weight="FontWeight.Bolder">
+                                Create
+                            </FluentLabel>
+                        </FluentNavLink>
+                        <p>your very own space!</p>
+                    </FluentCard>
+                </FluentGridItem>
+
+                <FluentGridItem xs="12" sm="6">
+                    <FluentCard Width="80%">
+                        <FluentNavLink Href="spaces/search" Icon="@(new Icons.Filled.Size20.VehicleCarParking())">
+                            <FluentLabel Color="Color.Accent" Typo="Typography.H4" Weight="FontWeight.Bolder">
+                                Search
+                            </FluentLabel>
+                        </FluentNavLink>
+                        <p>for a space to park!</p>
+                    </FluentCard>
+                </FluentGridItem>
+            </Authorized>
+        </AuthorizeView>
+        
+        <AuthorizeView Roles="Admin">
+            <FluentGridItem xs="12" sm="6" HiddenWhen="GridItemHidden.SmAndDown">
+                <FluentCard Width="75%">
+                    <FluentLabel
+                        Color="Color.Warning"
+                        Typo="Typography.H3"
+                        Weight="FontWeight.Bold">
+
+                        You are signed in as an Admin.
+
+                    </FluentLabel>
+                </FluentCard>
+            </FluentGridItem>
+        </AuthorizeView>
+
+    </FluentGrid>
 </div>
+
+
 
