@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace FluentBlazorAuthTest.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20231228003959_addIsAvailable")]
-    partial class addIsAvailable
+    [Migration("20240107005900_CreateParkPalSchema")]
+    partial class CreateParkPalSchema
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -121,6 +121,9 @@ namespace FluentBlazorAuthTest.Migrations
                     b.Property<DateTime>("EndDateTime")
                         .HasColumnType("datetime2");
 
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
                     b.Property<int>("PaymentStatus")
                         .HasColumnType("int");
 
@@ -150,6 +153,9 @@ namespace FluentBlazorAuthTest.Migrations
                     b.Property<string>("Id")
                         .HasColumnType("nvarchar(450)");
 
+                    b.Property<string>("Address")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<DateTime?>("DateCreated")
                         .HasColumnType("datetime2");
 
@@ -164,6 +170,9 @@ namespace FluentBlazorAuthTest.Migrations
                         .HasColumnType("bit");
 
                     b.Property<bool>("IsPublic")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsVacant")
                         .HasColumnType("bit");
 
                     b.Property<DateTime?>("LatestTransaction")
@@ -213,6 +222,22 @@ namespace FluentBlazorAuthTest.Migrations
                         .HasFilter("[NormalizedName] IS NOT NULL");
 
                     b.ToTable("AspNetRoles", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = "53ded116-2219-43f1-ae5a-aca97e902d18",
+                            ConcurrencyStamp = "09d3f6e7-4e3d-4fd4-bf73-99d0a8983e76",
+                            Name = "User",
+                            NormalizedName = "USER"
+                        },
+                        new
+                        {
+                            Id = "95ad0b71-22e7-4c6d-a136-360ba8462012",
+                            ConcurrencyStamp = "edafa638-cf92-4ff8-bc78-e4c4aadda2b9",
+                            Name = "Admin",
+                            NormalizedName = "ADMIN"
+                        });
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>

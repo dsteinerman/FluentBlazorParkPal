@@ -30,4 +30,8 @@
   <ItemGroup>
     <_ContentIncludedByDefault Remove="Components\Spaces\Pages\EditBooking.razor" />
   </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Data\Migrations\" />
+    <Folder Include="Migrations\" />
+  </ItemGroup>
 </Project>
