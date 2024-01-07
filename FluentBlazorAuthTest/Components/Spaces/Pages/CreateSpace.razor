@@ -140,17 +140,29 @@
 
     protected override async Task OnInitializedAsync()
     {
-        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
-        var user = authState.User;
+    var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+    var user = authState.User;
 
         if (user.Identity is { IsAuthenticated: true })
         {
             var userId = UserManager.GetUserId(user);
-            if (userId != null)
-                _currentUser = await UserManager.FindByIdAsync(userId);
+            if (!string.IsNullOrEmpty(userId))
+            {
+                await LoadCurrentUserAsync(userId);
+            }
         }
 
     }
+
+    private async Task LoadCurrentUserAsync(string userId)
+    {
+    await using var dbContext = DbContextFactory.CreateDbContext();
+    _currentUser = await dbContext.Users
+                                  .AsNoTracking()
+                                  .FirstOrDefaultAsync(u => u.Id == userId);
+    }
+
+
 
 
     // This page's input model.

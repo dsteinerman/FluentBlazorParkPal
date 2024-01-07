@@ -6,11 +6,14 @@
 @using FluentBlazorAuthTest.Data.Services
 @using FluentBlazorAuthTest.Services
 @using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Identity
 @using Microsoft.EntityFrameworkCore
 @using Microsoft.IdentityModel.Tokens
 @using System.Security.Claims
 
 
+@inject IDbContextFactory<ApplicationDbContext> DbContextFactory
+@inject UserManager<ApplicationUser> UserManager
 @inject ApplicationDbContext DbContext
 @inject NavigationManager NavigationManager
 @inject ISpaceService SpaceService
@@ -98,20 +101,40 @@ else
     private int totalPages => (int)Math.Ceiling((double)totalSpaces / pageSize);
 
     private ClaimsPrincipal user;
+    private ApplicationUser? _currentUser;
+
 
     protected override async Task OnInitializedAsync()
     {
-        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
-        user = authState.User;
 
-        await LoadSpaces();
+    var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+    var user = authState.User;
+
+        if (user.Identity is { IsAuthenticated: true })
+        {
+            var userId = UserManager.GetUserId(user);
+            if (!string.IsNullOrEmpty(userId))
+            {
+                await LoadCurrentUserAsync(userId);
+            }
+        }
+    await LoadSpaces();
+
+    }
+
+    private async Task LoadCurrentUserAsync(string userId)
+    {
+    await using var dbContext = DbContextFactory.CreateDbContext();
+    _currentUser = await dbContext.Users
+                                  .AsNoTracking()
+                                  .FirstOrDefaultAsync(u => u.Id == userId);
     }
 
     private async Task LoadSpaces()
     {
-        var includePrivateSpaces = user.IsInRole("Admin");
-        spaces = await SpaceService.GetAllSpacesAsync();
-        (spaces, totalSpaces) = await SpaceService.GetSpacesPageAsync(currentPage, pageSize, includePrivateSpaces);
+    var includePrivateSpaces = _currentUser != null && await UserManager.IsInRoleAsync(_currentUser, "Admin");
+    spaces = await SpaceService.GetAllSpacesAsync();
+    (spaces, totalSpaces) = await SpaceService.GetSpacesPageAsync(currentPage, pageSize, includePrivateSpaces);
 
     }
     

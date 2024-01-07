@@ -5,8 +5,15 @@
 @using FluentBlazorAuthTest.Data.Services
 @using System.Security.Claims
 @using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.EntityFrameworkCore
 @inject ISpaceService SpaceService
 @inject NavigationManager NavigationManager
+@inject UserManager<ApplicationUser> UserManager
+
+
+@inject IDbContextFactory<ApplicationDbContext> DbContextFactory
+
 @inject AuthenticationStateProvider AuthenticationStateProvider
 
 
@@ -74,10 +81,22 @@
 
     private IEnumerable<Space> spaces;
 
+    private ApplicationUser _currentUser;
+
+
     protected override async Task OnInitializedAsync()
     {
-        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
-        var user = authState.User;
+    var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+    var user = authState.User;
+
+    if (user.Identity is { IsAuthenticated: true })
+    {
+        var userId = UserManager.GetUserId(user);
+        if (!string.IsNullOrEmpty(userId))
+        {
+            await LoadCurrentUserAsync(userId);
+        }
+    }
 
         if (!string.IsNullOrEmpty(Id))
         {
@@ -89,6 +108,13 @@
             // Navigate to create or unauthorized access page
             NavigationManager.NavigateTo("/spaces/create/");
         }
+    }
+    private async Task LoadCurrentUserAsync(string userId)
+    {
+    await using var dbContext = DbContextFactory.CreateDbContext();
+    _currentUser = await dbContext.Users
+                                  .AsNoTracking()
+                                  .FirstOrDefaultAsync(u => u.Id == userId);
     }
 
     private bool IsValidUserForEditing(ClaimsPrincipal user)

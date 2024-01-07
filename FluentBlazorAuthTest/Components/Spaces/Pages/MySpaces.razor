@@ -26,6 +26,8 @@
 @inject IBookingService BookingService
 @inject ISpaceService SpaceService
 @inject AuthenticationStateProvider AuthenticationStateProvider
+@inject IDbContextFactory<ApplicationDbContext> DbContextFactory
+
 
 <PageTitle>My Hosted Spaces</PageTitle>
 
@@ -63,7 +65,7 @@
                     <FluentButton Appearance="Appearance.Lightweight" Color="Red" @onclick="@(() => DeleteSpace(space.Id))">Delete</FluentButton>
 
                 }
-                @if (space.IsAvailable && !user.IsInRole("Admin"))
+                @if(isAdmin)
                 {
                     <FluentButton Appearance="Appearance.Lightweight" Color="Red" @onclick="@(() => DeleteSpace(space.Id))">Delete</FluentButton>
 
@@ -99,34 +101,45 @@ else
     private const int pageSize = 4;
     private int totalPages => (int)Math.Ceiling((double)totalSpaces / pageSize);
 
-    private ApplicationUser currentUser;
+    private ApplicationUser _currentUser;
 
     private ClaimsPrincipal user;
+    private bool isAdmin;
+
 
 
     protected override async Task OnInitializedAsync()
     {
-        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
-        user = authState.User;
+    var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+    var userPrincipal = authState.User;
 
-        if (user.Identity.IsAuthenticated)
+    if (userPrincipal.Identity.IsAuthenticated)
+    {
+        var userId = UserManager.GetUserId(userPrincipal);
+        if (!string.IsNullOrEmpty(userId))
         {
-            var userId = UserManager.GetUserId(user);
-            currentUser = await UserManager.FindByIdAsync(userId);
+            await LoadCurrentUserAsync(userId);
+            isAdmin = await UserManager.IsInRoleAsync(_currentUser, "Admin");
         }
-        bookings = await BookingService.GetAllBookingsAsync();
+    }
 
-        await LoadSpaces();
+    bookings = await BookingService.GetAllBookingsAsync();
+    await LoadSpaces();
+    }
+    private async Task LoadCurrentUserAsync(string userId)
+    {
+    await using var dbContext = DbContextFactory.CreateDbContext();
+    _currentUser = await dbContext.Users
+                                  .AsNoTracking()
+                                  .FirstOrDefaultAsync(u => u.Id == userId);
     }
 
     private async Task LoadSpaces()
     {
-        var isAdmin = user.IsInRole("Admin");
-        hostedSpaces = await SpaceService.GetAllSpacesAsync();
-
-        (hostedSpaces, totalSpaces) = await SpaceService.GetHostSpacesPageAsync(currentPage, pageSize, isAdmin, currentUser);
-
+    hostedSpaces = await SpaceService.GetAllSpacesAsync();
+    (hostedSpaces, totalSpaces) = await SpaceService.GetHostSpacesPageAsync(currentPage, pageSize, isAdmin, _currentUser);
     }
+
     private async Task NextPage()
     {
         if (currentPage < totalPages)

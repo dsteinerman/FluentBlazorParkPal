@@ -31,9 +31,9 @@ public interface IBookingService
 
     Task UpdateBookingPriceBasedOnSpace(string bookingId);
 
-    Task UpdatePaymentStatusUnpaidByIdAsync(string bookingId, BookingStatus bookingstatus);
+    //Task UpdatePaymentStatusUnpaidByIdAsync(string bookingId, BookingStatus bookingstatus);
 
-    Task UpdatePaymentStatusPaidByIdAsync(string bookingId, BookingStatus bookingstatus);
+    //Task UpdatePaymentStatusPaidByIdAsync(string bookingId, BookingStatus bookingstatus);
 
     Task<IEnumerable<Booking>> GetBookingsBySpaceIdAsync(string spaceId);
 

@@ -6,6 +6,7 @@
 @using FluentBlazorAuthTest.Data.Services
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Identity
+@using Microsoft.EntityFrameworkCore
 @using System.Security.Claims
 
 @inject ISpaceService SpaceService
@@ -13,6 +14,7 @@
 @inject NavigationManager NavigationManager
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject UserManager<ApplicationUser> UserManager
+@inject IDbContextFactory<ApplicationDbContext> DbContextFactory
 
 @rendermode InteractiveServer
 
@@ -105,6 +107,9 @@
 
     private ClaimsPrincipal user;
 
+    private ApplicationUser _currentUser;
+
+
     private DateTime StartDate { get; set; } = DateTime.Now.Date;
     private DateTime EndDate { get; set; } = DateTime.Now.Date.AddDays(1);
 
@@ -132,8 +137,17 @@
 
     protected override async Task OnInitializedAsync()
     {
-        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
-        user = authState.User;
+    var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+    var user = authState.User;
+
+    if (user.Identity is { IsAuthenticated: true })
+    {
+        var userId = UserManager.GetUserId(user);
+        if (!string.IsNullOrEmpty(userId))
+        {
+            await LoadCurrentUserAsync(userId);
+        }
+    }
 
         if (Id is not null)
         {
@@ -177,6 +191,13 @@
                     ClientUserId = user.Identity.IsAuthenticated ? user.FindFirst(ClaimTypes.NameIdentifier)?.Value : null
                 };
         }
+    }
+    private async Task LoadCurrentUserAsync(string userId)
+    {
+    await using var dbContext = DbContextFactory.CreateDbContext();
+    _currentUser = await dbContext.Users
+                                  .AsNoTracking()
+                                  .FirstOrDefaultAsync(u => u.Id == userId);
     }
 
 

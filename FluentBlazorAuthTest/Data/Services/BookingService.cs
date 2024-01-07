@@ -1,24 +1,27 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Internal;
 using static FluentBlazorAuthTest.Components.Pages.Book;
 
 namespace FluentBlazorAuthTest.Data.Services
 {
     public class BookingService : IBookingService
     {
-        private readonly ApplicationDbContext _context;
+        private readonly IDbContextFactory<ApplicationDbContext> _contextFactory;
+
 
         private readonly ISpaceService _spaceService;
 
-        public BookingService(ApplicationDbContext context, ISpaceService spaceService)
+        public BookingService(IDbContextFactory<ApplicationDbContext> contextFactory, ISpaceService spaceService)
         {
-            _context = context;
+            _contextFactory = contextFactory;
             _spaceService = spaceService;
         }
 
         public async Task AddBookingAsync(Booking booking)
         {
-            _context.Bookings.Add(booking);
-            await _context.SaveChangesAsync();
+            using var context = _contextFactory.CreateDbContext();
+            context.Bookings.Add(booking);
+            await context.SaveChangesAsync();
         }
 
         public Task<Booking> CreateBookingAsync(Booking booking)
@@ -33,26 +36,28 @@ namespace FluentBlazorAuthTest.Data.Services
 
         public async Task<IEnumerable<Booking>> GetAllBookingsAsync()
         {
-            var result = await _context.Bookings.ToListAsync();
-            return result;
+            using var context = _contextFactory.CreateDbContext();
+            return await context.Bookings.ToListAsync();
         }
 
         public async Task<Booking> GetBookingByIdAsync(string Id)
         {
-            var result = await _context.Bookings.FindAsync(Id);
-            return result;
+            using var context = _contextFactory.CreateDbContext();
+            return await context.Bookings.FindAsync(Id);
         }
 
         public async Task<IEnumerable<Booking>> GetBookingsBySpaceIdAsync(string spaceId)
         {
-            return await _context.Bookings
+            using var context = _contextFactory.CreateDbContext();
+            return await context.Bookings
                              .Where(b => b.SpaceId == spaceId)
                              .ToListAsync();
         }
 
         public async Task<Booking> GetBookingStatusByIdAsync(string Id)
         {
-            var booking = await _context.Bookings.FindAsync(Id);
+            using var context = _contextFactory.CreateDbContext();
+            var booking = await context.Bookings.FindAsync(Id);
             return booking;
         }
 
@@ -68,7 +73,8 @@ namespace FluentBlazorAuthTest.Data.Services
 
         public async Task UpdateBookingAsync(Booking booking, string Id)
         {
-            var dbBooking = await _context.Bookings.FindAsync(Id);
+            using var context = _contextFactory.CreateDbContext();
+            var dbBooking = await context.Bookings.FindAsync(Id);
             if (dbBooking != null)
             {
                 dbBooking.StartDateTime = booking.StartDateTime;
@@ -82,8 +88,8 @@ namespace FluentBlazorAuthTest.Data.Services
                 dbBooking.IsActive = booking.IsActive;
                 dbBooking.SpaceId = booking.SpaceId;
 
-                await _context.SaveChangesAsync();
-
+                context.Entry(dbBooking).CurrentValues.SetValues(booking);
+                await context.SaveChangesAsync();
             }
         }
 
@@ -92,37 +98,15 @@ namespace FluentBlazorAuthTest.Data.Services
             throw new NotImplementedException();
         }
 
-        public async Task UpdatePaymentStatusUnpaidByIdAsync(string bookingId, BookingStatus bookingstatus)
-        {
-            var booking = await _context.Bookings.FindAsync(bookingId);
-
-            booking.PaymentStatus = PaymentStatus.Unpaid;
-
-            await _context.SaveChangesAsync();
-
-
-        }
-
-        public async Task UpdatePaymentStatusPaidByIdAsync(string bookingId, BookingStatus bookingstatus)
-        {
-            var booking = await _context.Bookings.FindAsync(bookingId);
-
-            booking.PaymentStatus = PaymentStatus.Unpaid;
-
-            await _context.SaveChangesAsync();
-        }
 
         public async Task<(IEnumerable<Booking>, int)> GetBookingPageAsync(int pageNumber, int pageSize)
         {
-            var query = _context.Bookings.AsQueryable();
-
-            // Filter the query to include only public spaces
-            //var query = _context.Bookings.Where(s => s.IsPublic).AsQueryable();
+            using var context = _contextFactory.CreateDbContext();
+            var query = context.Bookings.AsQueryable();
 
             int totalBookings = await query.CountAsync();
-
             var bookings = await query
-                .OrderBy(s => s.StartDateTime) //order
+                .OrderBy(s => s.StartDateTime)
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize)
                 .ToListAsync();
@@ -134,21 +118,15 @@ namespace FluentBlazorAuthTest.Data.Services
         {
 
             var booking = await GetBookingByIdAsync(Id);
-
             booking.IsActive = false;
-
             await UpdateBookingAsync(booking, Id);
 
-            // Retrieve the associated space
-            var space = await _spaceService.GetSpaceByIdAsync((string)booking.SpaceId);
+            var space = await _spaceService.GetSpaceByIdAsync(booking.SpaceId);
             if (space != null)
             {
                 space.IsAvailable = true;
-
-                await _spaceService.UpdateSpaceAsync(space, Id);
+                await _spaceService.UpdateSpaceAsync(space, booking.SpaceId);
             }
-
-
 
         }
     }

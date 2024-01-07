@@ -1,18 +1,22 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Internal;
 
 namespace FluentBlazorAuthTest.Data.Services
 {
     public class SpaceService : ISpaceService
     {
-        private readonly ApplicationDbContext _context;
-        public SpaceService(ApplicationDbContext context)
+        private readonly IDbContextFactory<ApplicationDbContext> _contextFactory;
+
+        // private readonly ApplicationDbContext _context;_dbContextFactory;
+        public SpaceService(IDbContextFactory<ApplicationDbContext> dbContextFactory)
         {
-            _context = context;
+            _contextFactory = dbContextFactory;
         }
         public async Task AddSpaceAsync(Space space)
         {
-            _context.Spaces.Add(space);
-            await _context.SaveChangesAsync();
+            using var context = _contextFactory.CreateDbContext();
+            context.Spaces.Add(space);
+            await context.SaveChangesAsync();
 
         }
         public Task<Space> CreateSpaceAsync(Space space)
@@ -22,24 +26,25 @@ namespace FluentBlazorAuthTest.Data.Services
 
         public async Task DeleteSpaceAsync(string spaceId)
         {
-            var space = await _context.Spaces.FindAsync(spaceId);
+            using var context = _contextFactory.CreateDbContext();
+            var space = await context.Spaces.FindAsync(spaceId);
             if (space != null)
             {
-                _context.Spaces.Remove(space);
-                await _context.SaveChangesAsync();
+                context.Spaces.Remove(space);
+                await context.SaveChangesAsync();
             }
         }
 
         public async Task<IEnumerable<Space>> GetAllSpacesAsync()
         {
-            var result = await _context.Spaces.ToListAsync();
-            return result;
+            using var context = _contextFactory.CreateDbContext();
+            return await context.Spaces.ToListAsync();
         }
 
         public async Task<Space> GetSpaceByIdAsync(string spaceId)
         {
-            var result = await _context.Spaces.FindAsync(spaceId);
-            return result;
+            using var context = _contextFactory.CreateDbContext();
+            return await context.Spaces.FindAsync(spaceId);
         }
 
         public Task<decimal> GetSpacePriceByIdAsync(string spaceId)
@@ -49,7 +54,8 @@ namespace FluentBlazorAuthTest.Data.Services
 
         public async Task UpdateSpaceAsync(Space space, string spaceId)
         {
-            var dbSpace = await _context.Spaces.FindAsync(spaceId);
+            using var context = _contextFactory.CreateDbContext();
+            var dbSpace = await context.Spaces.FindAsync(spaceId);
             if (dbSpace != null)
             {
                 dbSpace.Size = space.Size;
@@ -63,20 +69,23 @@ namespace FluentBlazorAuthTest.Data.Services
                 dbSpace.IsPublic = space.IsPublic;
                 dbSpace.IsVacant = space.IsVacant;
 
-                await _context.SaveChangesAsync();
+                context.Entry(dbSpace).CurrentValues.SetValues(space);
+                await context.SaveChangesAsync();
             }
         }
 
         async Task<IEnumerable<Space>> GetSpacesByHostIdAsync(string hostId)
         {
-            return await _context.Spaces
+            using var context = _contextFactory.CreateDbContext();
+            return await context.Spaces
                         .Where(s => s.HostId == hostId)
                         .ToListAsync();
         }
 
         async Task<IEnumerable<Space>> ISpaceService.GetSpacesByHostIdAsync(string hostId)
         {
-            return await _context.Spaces
+            using var context = _contextFactory.CreateDbContext();
+            return await context.Spaces
                         .Where(s => s.HostId == hostId)
                         .ToListAsync();
         }
@@ -84,7 +93,8 @@ namespace FluentBlazorAuthTest.Data.Services
 
         public async Task<(IEnumerable<Space>, int)> GetSpacesPageAsync(int pageNumber, int pageSize, bool includeNonPublicSpaces)
         {
-            var query = _context.Spaces.AsQueryable();
+            using var context = _contextFactory.CreateDbContext();
+            var query = context.Spaces.AsQueryable();
 
             if (!includeNonPublicSpaces)
             {
@@ -99,7 +109,8 @@ namespace FluentBlazorAuthTest.Data.Services
 
         public async Task<(IEnumerable<Space>, int)> GetHostSpacesPageAsync(int pageNumber, int pageSize, bool isAdmin, ApplicationUser currentUser)
         {
-            var query = _context.Spaces.AsQueryable();
+            using var context = _contextFactory.CreateDbContext();
+            var query = context.Spaces.AsQueryable();
 
             if (!isAdmin)
             {

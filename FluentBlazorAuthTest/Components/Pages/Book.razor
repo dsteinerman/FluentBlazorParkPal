@@ -13,6 +13,8 @@
 @inject IBookingService BookingService
 @inject ISpaceService SpaceService
 @inject ApplicationDbContext DbContext
+@inject IDbContextFactory<ApplicationDbContext> DbContextFactory
+
 
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject NavigationManager NavigationManager
@@ -34,9 +36,14 @@ else
 
 @code {
     private IEnumerable<Booking> bookings;
-    private ApplicationUser currentUser;
     private ClaimsPrincipal user;
-  
+    private ApplicationUser? _currentUser;
+    private bool isAdmin;
+
+
+
+
+    private Dictionary<string, bool> isAdminOrCurrentUserCache = new Dictionary<string, bool>();
 
     private Dictionary<string, Space> spaceDetailsForBookings = new Dictionary<string, Space>();
 
@@ -44,45 +51,85 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        await InitializeUserAsync();
-        await LoadBookings();
-        await LoadDataSpacesAsync();
+    await InitializeUserAsync();
+    await LoadBookings();
+    await LoadDataSpacesAsync();
+    await PrepareBookingsDisplay();
 
     }
     private async Task LoadBookings()
     {
-        try
+    try
+    {
+        bookings = await BookingService.GetAllBookingsAsync();
+        var currentDate = DateTime.Now;
+        foreach (var booking in bookings)
         {
-            bookings = await BookingService.GetAllBookingsAsync();
-            var currentDate = DateTime.Now;
-            foreach (var booking in bookings)
+            if (booking.EndDateTime < currentDate && booking.IsActive)
             {
-                if (booking.EndDateTime < currentDate && booking.IsActive)
-                {
-                    await CancelBooking(booking.Id);
-                }
+                await CancelBooking(booking.Id);
             }
         }
-        catch (Exception ex)
-        {
-        }
-        finally
-        {
-            StateHasChanged();
-        }
+    }
+    catch (Exception ex)
+    {
+    }
+    finally
+    {
+        StateHasChanged();
+    }
     }
 
     private async Task InitializeUserAsync()
     {
-        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
-        user = authState.User;
+    var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+    var user = authState.User;
 
-        if (user.Identity.IsAuthenticated)
+        if (user.Identity is { IsAuthenticated: true })
         {
             var userId = UserManager.GetUserId(user);
-            currentUser = await UserManager.FindByIdAsync(userId);
+            if (!string.IsNullOrEmpty(userId))
+            {
+                await LoadCurrentUserAsync(userId);
+                isAdmin = await UserManager.IsInRoleAsync(_currentUser, "Admin");
+
+            }
+
         }
     }
+    private async Task LoadCurrentUserAsync(string userId)
+    {
+    await using var dbContext = DbContextFactory.CreateDbContext();
+    _currentUser = await dbContext.Users
+                                  .AsNoTracking()
+                                  .FirstOrDefaultAsync(u => u.Id == userId);
+    }
+
+    private async Task<bool> IsAdminOrCurrentUser(Booking booking)
+    {
+   
+        if (isAdminOrCurrentUserCache.TryGetValue(booking.Id, out bool isAdminOrCurrentUser))
+        {
+            return isAdminOrCurrentUser;
+        }
+
+        bool isAdmin = _currentUser != null && await UserManager.IsInRoleAsync(_currentUser, "Admin");
+        bool isCurrentUser = booking.ClientUserId == _currentUser?.Id;
+        isAdminOrCurrentUser = isAdmin || isCurrentUser;
+
+        isAdminOrCurrentUserCache[booking.Id] = isAdminOrCurrentUser;
+        return isAdminOrCurrentUser;
+    }
+
+    private async Task PrepareBookingsDisplay()
+    {
+        foreach (var booking in bookings)
+        {
+       
+            await IsAdminOrCurrentUser(booking);
+        }
+    }
+
     private async Task LoadDataSpacesAsync()
 {
     spaceDetailsForBookings.Clear();
@@ -194,7 +241,7 @@ public async Task PayForBooking(string bookingId)
             {
                 <FluentSpacer Width="25"></FluentSpacer>
 
-                if (user.IsInRole("Admin") || booking.ClientUserId == currentUser.Id)
+            if (isAdminOrCurrentUserCache.TryGetValue(booking.Id, out bool isAdminOrCurrentUser) && isAdminOrCurrentUser)
                 {
                     <div class="pagination-container">
                         <FluentCard Width="80%">
@@ -208,8 +255,7 @@ public async Task PayForBooking(string bookingId)
                                                 <p class="booking-details">Booking Id: @booking.Id</p>
                                                 <p class="booking-details">Total Price: @booking.Price.ToString("C")</p>
                                                 <p class="booking-details">Payment Status: @booking.PaymentStatus.ToString()</p>
-                                               // <p class="booking-details">Active Status: @booking.IsActive</p>
-                                               // <p class="booking-details">Is Available: @space.IsAvailable</p>
+                                               
                                                 <p class="booking-details">Start Date: @booking.StartDateTime.ToString("MM-dd-yyyy")</p>
                                                 <p class="booking-details">End Date: @booking.EndDateTime.ToString("MM-dd-yyyy")</p>
                                             }
@@ -226,12 +272,11 @@ public async Task PayForBooking(string bookingId)
 
                                                 @if (booking.PaymentStatus != PaymentStatus.Paid && booking.BookingStatus == BookingStatus.Pending && booking.EndDateTime >= DateTime.Now)
                                                 {
-                                                    //<FluentButton OnClick="@(() => EditBooking(@booking.SpaceId))">Edit</FluentButton>
                                                     <FluentButton Appearance="Appearance.Accent" @onclick="@(() => PayForBooking(booking.Id))">Pay Now</FluentButton>
                                                 }
                                             }
 
-                                            @if (user != null && user.IsInRole("Admin"))
+                                            @if (isAdmin)
                                             {
                                                 <FluentButton Appearance="Appearance.Lightweight" Color="Red" @onclick="@(() => DeleteBooking(booking.Id))">Delete</FluentButton>
                                             }
