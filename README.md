@@ -10,4 +10,3 @@ Contributing: We welcome contributions! If you'd like to improve ParkPal, please
 
 Fork this repository. Create your feature branch (git checkout -b feature/AmazingFeature). Commit your changes (git commit -m 'Add some AmazingFeature'). Push to the branch (git push origin feature/AmazingFeature). Open a pull request.
 
-Support - For any issues or queries, please contact us @LCM.
